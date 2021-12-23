@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <UserSecretsId>4F873276-EAA7-4BF1-81BA-C30455E684D2</UserSecretsId>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+    <PackageReference Include="MyJetWallet.Sdk.GrpcMetrics" Version="2.0.4" />
+    <PackageReference Include="MyJetWallet.Sdk.GrpcSchema" Version="1.0.6" />
+    <PackageReference Include="MyJetWallet.Sdk.Service" Version="2.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="prometheus-net.AspNetCore" Version="5.0.1" />
+    <PackageReference Include="protobuf-net.Grpc.AspNetCore" Version="1.0.152" />
+    <PackageReference Include="SimpleTrading.BaseMetrics" Version="1.0.3" />
+    <PackageReference Include="SimpleTrading.ServiceStatusReporterConnector" Version="1.0.9" />
+    <PackageReference Include="MySettingsReader" Version="1.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Service.Liquidity.TradingPortfolio.Domain\Service.Liquidity.TradingPortfolio.Domain.csproj" />
+    <ProjectReference Include="..\Service.Liquidity.TradingPortfolio.Grpc\Service.Liquidity.TradingPortfolio.Grpc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
