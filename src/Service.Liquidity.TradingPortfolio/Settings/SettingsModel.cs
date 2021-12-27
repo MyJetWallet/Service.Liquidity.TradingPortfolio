@@ -20,7 +20,7 @@ namespace Service.Liquidity.TradingPortfolio.Settings
         [YamlProperty("LiquidityTradingPortfolio.BaseCurrencyConverterGrpcServiceUrl")]
         public string BaseCurrencyConverterGrpcServiceUrl { get; set; }
 
-        [YamlProperty("LiquidityPortfolio.SpotServiceBusHostPort")]
+        [YamlProperty("LiquidityTradingPortfolio.SpotServiceBusHostPort")]
         public string SpotServiceBusHostPort { get; set; }
 
         [YamlProperty("LiquidityTradingPortfolio.ServiceBusQuerySuffix")]
