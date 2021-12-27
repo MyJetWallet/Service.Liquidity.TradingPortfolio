@@ -6,7 +6,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     [DataContract]
     public class ManualSettlement
     {
-        public const string TopicName = "jetwallet-liquidity-portfolio-manualsettlement";
+        public const string TopicName = "jetwallet-liquidity-trading-portfolio-manualsettlement";
 
         [DataMember(Order = 1)] public long Id { get; set; }
         [DataMember(Order = 2)] public string BrokerId { get; set; }

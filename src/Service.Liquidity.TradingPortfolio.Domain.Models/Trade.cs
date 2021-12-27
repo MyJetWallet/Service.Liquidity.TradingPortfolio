@@ -6,9 +6,9 @@ using MyJetWallet.Domain.Orders;
 namespace Service.Liquidity.TradingPortfolio.Domain.Models
 {
     [DataContract]
-    public class AssetPortfolioTrade
+    public class Trade
     {
-        public const string TopicName = "jetwallet-liquidity-portfolio-trades";
+        public const string TopicName = "jetwallet-liquidity-trading-portfolio-trades";
         [DataMember(Order = 1)] public long Id { get; set; }
         [DataMember(Order = 2)] public string TradeId { get; set; }
         [DataMember(Order = 3)] public string AssociateBrokerId { get; set; }
@@ -33,7 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 22)] public string FeeAsset { get; set; }
         [DataMember(Order = 23)] public decimal FeeVolume { get; set; }
 
-        public AssetPortfolioTrade(string tradeId,
+        public Trade(string tradeId,
             string associateBrokerId,
             string associateSymbol,
             string baseAsset,
@@ -64,7 +64,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             FeeVolume = feeVolume;
         }
 
-        public AssetPortfolioTrade(string associateBrokerId,
+        public Trade(string associateBrokerId,
             string associateSymbol,
             string baseAsset,
             string quoteAsset,
@@ -93,7 +93,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             Side = baseVolume < 0 ? OrderSide.Sell : OrderSide.Buy;
         }
 
-        public AssetPortfolioTrade()
+        public Trade()
         {
         }
     }

@@ -35,7 +35,7 @@ namespace Service.Liquidity.TradingPortfolio.Modules
                 true);
             
             //Publishers
-            builder.RegisterMyServiceBusPublisher<AssetPortfolioTrade>(serviceBusClient, AssetPortfolioTrade.TopicName, true);
+            builder.RegisterMyServiceBusPublisher<Domain.Models.Trade>(serviceBusClient, Domain.Models.Trade.TopicName, true);
             builder.RegisterMyServiceBusPublisher<ChangeBalanceHistory>(serviceBusClient, ChangeBalanceHistory.TopicName, true);
             builder.RegisterMyServiceBusPublisher<ManualSettlement>(serviceBusClient, ManualSettlement.TopicName, true);
             builder.RegisterMyServiceBusPublisher<FeeShareSettlement>(serviceBusClient, FeeShareSettlement.TopicName, true);
