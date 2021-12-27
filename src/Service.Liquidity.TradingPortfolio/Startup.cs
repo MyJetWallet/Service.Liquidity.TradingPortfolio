@@ -10,10 +10,7 @@ using MyJetWallet.Sdk.GrpcSchema;
 using MyJetWallet.Sdk.Service;
 using Prometheus;
 using ProtoBuf.Grpc.Server;
-using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Modules;
-using Service.Liquidity.TradingPortfolio.Services;
-using SimpleTrading.BaseMetrics;
 using SimpleTrading.ServiceStatusReporterConnector;
 
 namespace Service.Liquidity.TradingPortfolio
@@ -46,7 +43,7 @@ namespace Service.Liquidity.TradingPortfolio
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcSchema<HelloService, IHelloService>();
+                //endpoints.MapGrpcSchema<HelloService, IHelloService>();
 
                 endpoints.MapGrpcSchemaRegistry();
 
@@ -61,6 +58,7 @@ namespace Service.Liquidity.TradingPortfolio
         {
             builder.RegisterModule<SettingsModule>();
             builder.RegisterModule<ServiceModule>();
+            builder.RegisterModule<ClientsModule>();
         }
     }
 }

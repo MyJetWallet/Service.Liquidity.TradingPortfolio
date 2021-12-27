@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using ProtoBuf.Grpc.Client;
 using Service.Liquidity.TradingPortfolio.Client;
-using Service.Liquidity.TradingPortfolio.Grpc.Models;
 
 namespace TestApp
 {
@@ -17,10 +16,6 @@ namespace TestApp
 
 
             var factory = new LiquidityTradingPortfolioClientFactory("http://localhost:5001");
-            var client = factory.GetHelloService();
-
-            var resp = await  client.SayHelloAsync(new HelloRequest(){Name = "Alex"});
-            Console.WriteLine(resp?.Message);
 
             Console.WriteLine("End");
             Console.ReadLine();

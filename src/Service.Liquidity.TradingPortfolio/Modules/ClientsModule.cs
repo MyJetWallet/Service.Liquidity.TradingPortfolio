@@ -2,7 +2,7 @@ using Autofac;
 using MyJetWallet.Sdk.NoSql;
 using Service.AssetsDictionary.Client;
 using Service.BaseCurrencyConverter.Client;
-using Service.MatchingEngine.PriceSource.Client;
+using Service.IndexPrices.Client;
 
 namespace Service.Liquidity.TradingPortfolio.Modules
 {
@@ -13,7 +13,9 @@ namespace Service.Liquidity.TradingPortfolio.Modules
             var myNoSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
             builder.RegisterAssetsDictionaryClients(myNoSqlClient);
             builder.RegisterBaseCurrencyConverterClient(Program.Settings.BaseCurrencyConverterGrpcServiceUrl, myNoSqlClient);
-            builder.RegisterMatchingEnginePriceSourceClient(myNoSqlClient);
+            builder.RegisterCurrentPricesClient(myNoSqlClient);
+            // $ для каждого актива
+            builder.RegisterIndexPricesClient(myNoSqlClient);
         }
     }
 }

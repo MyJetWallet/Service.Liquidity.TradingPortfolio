@@ -6,7 +6,9 @@ using MyServiceBus.Abstractions;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
+using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Subscribers;
 
 namespace Service.Liquidity.TradingPortfolio.Modules
 {
@@ -21,26 +23,27 @@ namespace Service.Liquidity.TradingPortfolio.Modules
 
             builder.RegisterMyServiceBusSubscriberSingle<FeeShareEntity>(serviceBusClient, 
                 FeeShareEntity.TopicName, 
-                $"LiquidityPortfolio-{Program.Settings.ServiceBusQuerySuffix}", 
+                $"TradingPortfolio", 
                 TopicQueueType.PermanentWithSingleConnection);
 
             builder.RegisterMyServiceBusSubscriberBatch<SwapMessage>(serviceBusClient,
                 SwapMessage.TopicName,
-                $"LiquidityPortfolio-{Program.Settings.ServiceBusQuerySuffix}",
+                $"TradingPortfolio",
                 TopicQueueType.PermanentWithSingleConnection);
 
             builder.RegisterPortfolioHedgerServiceBusClient(serviceBusClient,
-                $"LiquidityPortfolio-{Program.Settings.ServiceBusQuerySuffix}",
+                $"TradingPortfolio",
                 TopicQueueType.PermanentWithSingleConnection,
                 true);
             
             //Publishers
-            builder.RegisterMyServiceBusPublisher<Domain.Models.Trade>(serviceBusClient, Domain.Models.Trade.TopicName, true);
+            builder.RegisterMyServiceBusPublisher<PortfolioTrade>(serviceBusClient, PortfolioTrade.TopicName, true);
             builder.RegisterMyServiceBusPublisher<ChangeBalanceHistory>(serviceBusClient, ChangeBalanceHistory.TopicName, true);
             builder.RegisterMyServiceBusPublisher<ManualSettlement>(serviceBusClient, ManualSettlement.TopicName, true);
             builder.RegisterMyServiceBusPublisher<FeeShareSettlement>(serviceBusClient, FeeShareSettlement.TopicName, true);
 
-
+            builder.RegisterType<SwapMessageSubscriber>().SingleInstance().AutoActivate();
+            builder.RegisterType<PortfolioManager>().SingleInstance().As<IPortfolioManager>().AutoActivate();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Service.Liquidity.TradingPortfolio.Grpc;
 
 // ReSharper disable UnusedMember.Global
 
@@ -11,7 +10,7 @@ namespace Service.Liquidity.TradingPortfolio.Client
         {
             var factory = new LiquidityTradingPortfolioClientFactory(grpcServiceUrl);
 
-            builder.RegisterInstance(factory.GetHelloService()).As<IHelloService>().SingleInstance();
+            //builder.RegisterInstance(factory.GetHelloService()).As<IHelloService>().SingleInstance();
         }
     }
 }
