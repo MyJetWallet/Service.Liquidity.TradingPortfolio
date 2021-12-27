@@ -1,47 +1,46 @@
 ﻿using DotNetCoreDecorators;
-using Service.Liquidity.Converter.Domain.Models;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.PortfolioHedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System.Linq;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {
-    public class SwapMessageSubscriber
+    public class HadgeTradeMessageSubscriber
     {
         private readonly IPortfolioManager _manager;
 
-        public SwapMessageSubscriber(ISubscriber<IReadOnlyList<SwapMessage>> subscriber, 
+        public HadgeTradeMessageSubscriber(ISubscriber<IReadOnlyList<TradeMessage>> subscriber, 
             IPortfolioManager manager)
         {
             subscriber.Subscribe(Handler);
-            this._manager = manager;
+            _manager = manager;
         }
 
-        private async ValueTask Handler(IReadOnlyList<SwapMessage> messages)
+        private async ValueTask Handler(IReadOnlyList<TradeMessage> messages)
         {
             await _manager.ApplyItemsAsync(ToItems(messages));
             return ;
         }
 
-        private IReadOnlyList<PortfolioInputModel> ToItems(IReadOnlyList<SwapMessage> messages)
-        { 
+        private IReadOnlyList<PortfolioInputModel> ToItems(IReadOnlyList<TradeMessage> messages)
+        {
             var items = messages
                  .Select(i => new PortfolioInputModel
                  {
                      From = new InputModel()
-                     { 
-                         AssetId = i.AssetId1,
-                         Volume = Convert.ToDecimal(i.Volume1),
-                         WalletId = i.WalletId1,
+                     {
+                         AssetId = i.BaseAsset,
+                         Volume = i.Volume,
+                         WalletId = i.AssociateWalletId,
                      },
                      To = new InputModel()
                      {
-                         AssetId = i.AssetId2,
-                         Volume = Convert.ToDecimal(i.Volume2),
-                         WalletId = i.WalletId2,
+                         AssetId = i.QuoteAsset,
+                         Volume = i.OppositeVolume,
+                         WalletId = i.AssociateBrokerId,
                      }
                  }).ToList();
 

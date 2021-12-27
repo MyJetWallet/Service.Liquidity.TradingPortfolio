@@ -40,7 +40,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             public decimal DailyVelocity { get; set; }
             public decimal DailyVelocityRiskInUsd { get; set; }
 
-            public WalletBalance GetOrCreate(PortfolioWallet portfolioWallet)
+            public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
                 if (!WalletBalances.TryGetValue(portfolioWallet.Id, out var walletBalance))
                 {
@@ -54,7 +54,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                 return walletBalance;
             }
 
-            public WalletBalance GetByPortfolioWalletId(string portfolioWalletId)
+            public WalletBalance GetWalletBalanceByPortfolioWalletId(string portfolioWalletId)
             {
                 if (!WalletBalances.TryGetValue(portfolioWalletId, out var walletBalance))
                 {

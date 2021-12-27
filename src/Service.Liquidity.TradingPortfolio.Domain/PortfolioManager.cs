@@ -1,6 +1,5 @@
 ﻿using MyJetWallet.Sdk.ServiceBus;
 using Service.IndexPrices.Client;
-using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -25,14 +24,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPublisher = serviceBusPublisher;
             _indexPricesClient = indexPricesClient;
-        }
-        public async Task ApplySwapsAsync(IReadOnlyList<SwapMessage> messages)
-        {
-            foreach (var message in messages) 
-            {
-                ApplyMessage(message);
-            }
-            await PublishPortfolioAsync();
         }
 
         public Portfolio GetCurrentPortfolio()
@@ -79,34 +70,48 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await _serviceBusPublisher.PublishAsync(_portfolio);
         }
 
-        private void ApplyMessage(SwapMessage message)
+        public async Task ApplyItemAsync(PortfolioInputModel message)
         {
-            var portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId2);
-            if(portfolioWallet != null)
+            ApplyItem(message);
+            await PublishPortfolioAsync();
+        }
+        public async Task ApplyItemsAsync(IReadOnlyList<PortfolioInputModel> messages)
+        {
+            foreach (var message in messages)
             {
-                // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(message.AssetId1);
-                var walletBalance1 = asset1.GetOrCreate(portfolioWallet);
-                walletBalance1.Balance += Convert.ToDecimal(message.Volume1);
-
-                // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(message.AssetId2);
-                var walletBalance2 = asset2.GetOrCreate(portfolioWallet);
-                walletBalance2.Balance -= Convert.ToDecimal(message.Volume2);
+                ApplyItem(message);
             }
+            await PublishPortfolioAsync();
+        }
 
-            portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId1);
+        private void ApplyItem(PortfolioInputModel message)
+        {
+            var portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.To.WalletId);
             if (portfolioWallet != null)
             {
                 // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(message.AssetId1);
-                var walletBalance1 = asset1.GetOrCreate(portfolioWallet);
-                walletBalance1.Balance -= Convert.ToDecimal(message.Volume1);
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(message.From.AssetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(message.From.Volume);
 
                 // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(message.AssetId2);
-                var walletBalance2 = asset2.GetOrCreate(portfolioWallet);
-                walletBalance2.Balance += Convert.ToDecimal(message.Volume2);
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(message.To.AssetId);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance2.Balance -= Convert.ToDecimal(message.To.Volume);
+            }
+
+            portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.From.WalletId);
+            if (portfolioWallet != null)
+            {
+                // asset 1
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(message.From.AssetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance1.Balance -= Convert.ToDecimal(message.From.Volume);
+
+                // asset 2
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(message.To.AssetId);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance2.Balance += Convert.ToDecimal(message.To.Volume);
             }
         }
     }

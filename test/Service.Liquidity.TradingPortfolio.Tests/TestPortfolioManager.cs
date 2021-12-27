@@ -127,25 +127,9 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 messageCount++;
             };
 
-            var swaps = new SwapMessage()
-            {
-                AccountId1 = "User 1",
-                AccountId2 = "Broker",
-                AssetId1 = "BTC",
-                AssetId2 = "USD",
-                BrokerId = "JetWallet",
-                Volume1 = "1.0",
-                Volume2 = "50000.0",
-                WalletId1 = "SP-User 1",
-                WalletId2 = "SP-Broker",
-                Id = "1",
-                MessageId = "1",
-                Timestamp = DateTime.Now,
-                DifferenceAsset = "USD",
-                DifferenceVolumeAbs = 50m,
-            };
 
-            await _service.ApplySwapsAsync(new[] { swaps });
+            await _service.ApplyItemAsync(ClientToBroker(1m, "BTC", "SP-User", 50000m, "USD", "SP-Broker"));
+
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(1m);
@@ -156,53 +140,22 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplyClientToClientSwap()
         {
-            var swaps = new SwapMessage()
-            {
-                AccountId1 = "User 1",
-                AccountId2 = "User 2",
-                AssetId1 = "BTC",
-                AssetId2 = "USD",
-                BrokerId = "JetWallet",
-                Volume1 = "1.0",
-                Volume2 = "50000.0",
-                WalletId1 = "User 1",
-                WalletId2 = "User 2",
-                Id = "1",
-                MessageId = "1",
-                Timestamp = DateTime.Now,
-                DifferenceAsset = "USD",
-                DifferenceVolumeAbs = 50m,
-            };
+            await _service.ApplyItemAsync(ClientToBroker(1m, "BTC", "User 1", 50000m, "USD", "User 2"));
 
-            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
-            portfolio.GetOrCreateAssetBySymbol("BTC").GetByPortfolioWalletId("Converter").Should().BeNull();
-            portfolio.GetOrCreateAssetBySymbol("USD").GetByPortfolioWalletId("Converter").Should().BeNull();
+            portfolio.GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
+            portfolio.GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
         }
 
         [Test]
         public async Task ApplyBrokerToClientSwap()
         {
-            var swaps = new SwapMessage()
+            await _service.ApplyItemsAsync(new[]
             {
-                AccountId1 = "Broker",
-                AccountId2 = "User 1",
-                AssetId1 = "BTC",
-                AssetId2 = "USD",
-                BrokerId = "JetWallet",
-                Volume1 = "1.0",
-                Volume2 = "50000.0",
-                WalletId1 = "SP-Broker",
-                WalletId2 = "SP-User 1",
-                Id = "1",
-                MessageId = "1",
-                Timestamp = DateTime.Now,
-                DifferenceAsset = "USD",
-                DifferenceVolumeAbs = 50m,
-            };
+                ClientToBroker(1m, "BTC", "SP-Broker", 50000m, "USD", "SP-User"),
+            });
 
-            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(-1m);
@@ -213,11 +166,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplySeveralSwaps()
         {
-            await _service.ApplySwapsAsync(new[]
+            await _service.ApplyItemsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", 50000m, "USD"),
-                ClientToBroker(1m, "ETH", 4000m, "USD"),
-                ClientToBroker(9000m, "USD", 2m, "ETH"),
+                ClientToBroker(1m, "BTC", "SP-User", 50000m, "USD", "SP-Broker"),
+                ClientToBroker(1m, "ETH", "SP-User", 4000m, "USD", "SP-Broker"),
+                ClientToBroker(9000m, "USD", "SP-User", 2m, "ETH", "SP-Broker"),
             });
 
             var portfolio = _service.GetCurrentPortfolio();
@@ -230,10 +183,10 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplySeveralSwapsZero()
         {
-            await _service.ApplySwapsAsync(new[]
+            await _service.ApplyItemsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", 40000m, "USD"),
-                ClientToBroker(40000m, "USD", 10m, "ETH"),
+                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker"),
             });
 
             var portfolio = _service.GetCurrentPortfolio();
@@ -243,24 +196,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             portfolio.Assets["ETH"].WalletBalances["Converter"].Balance.Should().Be(-10m);
         }
 
-        private SwapMessage ClientToBroker(decimal vol1, string asset1, decimal vol2, string asset2, string brokerWallet = "SP-Broker")
+        private PortfolioInputModel ClientToBroker(
+            decimal vol1, string asset1, string clientWallet,
+            decimal vol2, string asset2, string brokerWallet)
         {
-            return new SwapMessage()
+            return new PortfolioInputModel()
             {
-                AccountId1 = "User 1",
-                AccountId2 = "Broker",
-                AssetId1 = asset1,
-                AssetId2 = asset2,
-                BrokerId = "JetWallet",
-                Volume1 = vol1.ToString(),
-                Volume2 = vol2.ToString(),
-                WalletId1 = "SP-User 1",
-                WalletId2 = brokerWallet,
-                Id = "1",
-                MessageId = "1",
-                Timestamp = DateTime.Now,
-                DifferenceAsset = "USD",
-                DifferenceVolumeAbs = 50m,
+                From = new InputModel()
+                { 
+                    WalletId = clientWallet,
+                    Volume = vol1,
+                    AssetId = asset1,
+                },
+                To = new InputModel()
+                {
+                    WalletId = brokerWallet,
+                    Volume = vol2,
+                    AssetId = asset2,
+                },
             };
         }
 
@@ -281,23 +234,23 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _indexPricesMock.Set("USD", 1m);
             _indexPricesMock.Set("ETH", 4200m);
 
-            await _service.ApplySwapsAsync(new[]
+            await _service.ApplyItemsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", 40000m, "USD", "SP-Broker"),
-                ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
+                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker-1"),
             });
 
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetByPortfolioWalletId("Converter").Balance.Should().Be(1m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(41000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetByPortfolioWalletId("Converter").Should().BeNull();
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetByPortfolioWalletId("Converter").Balance.Should().Be(-40000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(-40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Balance.Should().Be(1m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(41000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").Balance.Should().Be(-40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(-40000m);
 
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetByPortfolioWalletId("Converter-1").Should().BeNull();
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetByPortfolioWalletId("Converter-1").Balance.Should().Be(-10m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(-42000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetByPortfolioWalletId("Converter-1").Balance.Should().Be(40000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter-1").Should().BeNull();
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter-1").Balance.Should().Be(-10m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(-42000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter-1").Balance.Should().Be(40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(40000m);
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalance.Should().Be(1m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalanceInUsd.Should().Be(41000m);
@@ -316,10 +269,10 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _indexPricesMock.Set("USD", 1m);
             _indexPricesMock.Set("ETH", 4200m);
 
-            await _service.ApplySwapsAsync(new[]
+            await _service.ApplyItemsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", 40000m, "USD", "SP-Broker"),
-                ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
+                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker-1"),
             });
 
             await _service.SetDailyVelocityAsync("BTC", 0.01m);
