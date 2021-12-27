@@ -8,7 +8,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 {
     public interface IPortfolioManager
     {
-        Task ApplySwaps(IReadOnlyList<Liquidity.Converter.Domain.Models.SwapMessage> messages);
+        Task ApplySwapsAsync(IReadOnlyList<Liquidity.Converter.Domain.Models.SwapMessage> messages);
         Portfolio GetCurrentPortfolio();
+        Task SetDailyVelocityAsync(string assetSymbol, decimal velocity);
     }
 }

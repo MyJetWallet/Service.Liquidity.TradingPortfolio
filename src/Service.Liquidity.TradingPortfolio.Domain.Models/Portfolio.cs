@@ -12,9 +12,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
 
         //TODO: Add [DataMember(Order = 1)]
         public Dictionary<string, Asset> Assets { get; set; }
+        
+        public decimal TotalNetInUsd { get; set; }
 
+        public decimal TotalDailyVelocityRiskInUsd { get; set; }
 
-        public Asset GetAssetBySymbol(string symbol)
+        public Asset GetOrCreateAssetBySymbol(string symbol)
         {
             if (!Assets.TryGetValue(symbol, out var asset))
             {
@@ -35,7 +38,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             public decimal NetBalance { get; set; }
             public decimal NetBalanceInUsd { get; set; }
             public decimal DailyVelocity { get; set; }
-            public decimal NetDailyVelocityAlarm { get; set; }
+            public decimal DailyVelocityRiskInUsd { get; set; }
 
             public WalletBalance GetOrCreate(PortfolioWallet portfolioWallet)
             {

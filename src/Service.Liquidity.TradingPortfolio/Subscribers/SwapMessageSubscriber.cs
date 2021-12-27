@@ -20,7 +20,7 @@ namespace Service.Liquidity.TradingPortfolio.Subscribers
 
         private async ValueTask Handler(IReadOnlyList<SwapMessage> messages)
         {
-            await _manager.ApplySwaps(messages);
+            await _manager.ApplySwapsAsync(messages);
             return ;
         }
     }
