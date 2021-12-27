@@ -13,5 +13,11 @@ namespace Service.Liquidity.TradingPortfolio.Settings
 
         [YamlProperty("LiquidityTradingPortfolio.ElkLogs")]
         public LogElkSettings ElkLogs { get; set; }
+
+        [YamlProperty("LiquidityPortfolio.MyNoSqlReaderHostPort")]
+        public string MyNoSqlReaderHostPort { get; set; }
+
+        [YamlProperty("LiquidityPortfolio.BaseCurrencyConverterGrpcServiceUrl")]
+        public string BaseCurrencyConverterGrpcServiceUrl { get; set; }
     }
 }
