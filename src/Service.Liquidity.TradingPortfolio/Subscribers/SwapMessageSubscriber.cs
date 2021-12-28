@@ -22,30 +22,8 @@ namespace Service.Liquidity.TradingPortfolio.Subscribers
 
         private async ValueTask Handler(IReadOnlyList<SwapMessage> messages)
         {
-            await _manager.ApplyItemsAsync(ToItems(messages));
+            await _manager.ApplySwapsAsync(messages);
             return ;
-        }
-
-        private IReadOnlyList<PortfolioInputModel> ToItems(IReadOnlyList<SwapMessage> messages)
-        { 
-            var items = messages
-                 .Select(i => new PortfolioInputModel
-                 {
-                     From = new InputModel()
-                     { 
-                         AssetId = i.AssetId1,
-                         Volume = Convert.ToDecimal(i.Volume1),
-                         WalletId = i.WalletId1,
-                     },
-                     To = new InputModel()
-                     {
-                         AssetId = i.AssetId2,
-                         Volume = Convert.ToDecimal(i.Volume2),
-                         WalletId = i.WalletId2,
-                     }
-                 }).ToList();
-
-            return items;
         }
     }
 }

@@ -19,7 +19,8 @@ namespace Service.Liquidity.TradingPortfolio.Subscribers
 
         private async ValueTask Handler(FeeShareEntity message)
         {
-            await _manager.ApplyItemAsync(ToItem(message));
+            await _manager.ApplyFeeShareAsync(message);
+            //await _manager.ApplyItemAsync(ToItem(message));
             return ;
         }
 

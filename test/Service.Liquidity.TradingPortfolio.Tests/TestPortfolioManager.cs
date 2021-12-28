@@ -57,6 +57,43 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
     }
 
+
+    public class PortfolioFeeSharePublisherMock : IServiceBusPublisher<FeeShareSettlement>
+    {
+        public Action<FeeShareSettlement> Callback { get; set; }
+
+        public async Task PublishAsync(FeeShareSettlement message)
+        {
+            Callback?.Invoke(message);
+        }
+
+        public async Task PublishAsync(IEnumerable<FeeShareSettlement> messageList)
+        {
+            foreach (var message in messageList)
+            {
+                Callback?.Invoke(message);
+            }
+        }
+    }
+
+    public class PortfolioTraderPublisherMock : IServiceBusPublisher<PortfolioTrade>
+    {
+        public Action<PortfolioTrade> Callback { get; set; }
+
+        public async Task PublishAsync(PortfolioTrade message)
+        {
+            Callback?.Invoke(message);
+        }
+
+        public async Task PublishAsync(IEnumerable<PortfolioTrade> messageList)
+        {
+            foreach (var message in messageList)
+            {
+                Callback?.Invoke(message);
+            }
+        }
+    }
+
     public class IndexPricesMock : IIndexPricesClient
     {
         public Dictionary<string, IndexPrice> Prices = new Dictionary<string, IndexPrice>();
@@ -109,13 +146,17 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public PortfolioManager _service;
         public PortfolioPublisherMock _portfolioPublisherMock = new PortfolioPublisherMock();
         public IndexPricesMock _indexPricesMock = new IndexPricesMock();
+        public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
+        public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
 
         [SetUp]
         public void Setup()
         {
             _service = new PortfolioManager(new PortfolioWalletManagerMock(),
                 _portfolioPublisherMock,
-                _indexPricesMock);
+                _indexPricesMock,
+                _portfolioFeeSharePublisherMock,
+                _portfolioTraderPublisherMock);
         }
 
         [Test]
@@ -127,9 +168,25 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 messageCount++;
             };
 
+            var swaps = new SwapMessage()
+            {
+                AccountId1 = "User 1",
+                AccountId2 = "Broker",
+                AssetId1 = "BTC",
+                AssetId2 = "USD",
+                BrokerId = "JetWallet",
+                Volume1 = "1.0",
+                Volume2 = "50000.0",
+                WalletId1 = "SP-User 1",
+                WalletId2 = "SP-Broker",
+                Id = "1",
+                MessageId = "1",
+                Timestamp = DateTime.Now,
+                DifferenceAsset = "USD",
+                DifferenceVolumeAbs = 50m,
+            };
 
-            await _service.ApplyItemAsync(ClientToBroker(1m, "BTC", "SP-User", 50000m, "USD", "SP-Broker"));
-
+            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(1m);
@@ -140,8 +197,25 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplyClientToClientSwap()
         {
-            await _service.ApplyItemAsync(ClientToBroker(1m, "BTC", "User 1", 50000m, "USD", "User 2"));
+            var swaps = new SwapMessage()
+            {
+                AccountId1 = "User 1",
+                AccountId2 = "User 2",
+                AssetId1 = "BTC",
+                AssetId2 = "USD",
+                BrokerId = "JetWallet",
+                Volume1 = "1.0",
+                Volume2 = "50000.0",
+                WalletId1 = "User 1",
+                WalletId2 = "User 2",
+                Id = "1",
+                MessageId = "1",
+                Timestamp = DateTime.Now,
+                DifferenceAsset = "USD",
+                DifferenceVolumeAbs = 50m,
+            };
 
+            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
@@ -151,11 +225,25 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplyBrokerToClientSwap()
         {
-            await _service.ApplyItemsAsync(new[]
+            var swaps = new SwapMessage()
             {
-                ClientToBroker(1m, "BTC", "SP-Broker", 50000m, "USD", "SP-User"),
-            });
+                AccountId1 = "Broker",
+                AccountId2 = "User 1",
+                AssetId1 = "BTC",
+                AssetId2 = "USD",
+                BrokerId = "JetWallet",
+                Volume1 = "1.0",
+                Volume2 = "50000.0",
+                WalletId1 = "SP-Broker",
+                WalletId2 = "SP-User 1",
+                Id = "1",
+                MessageId = "1",
+                Timestamp = DateTime.Now,
+                DifferenceAsset = "USD",
+                DifferenceVolumeAbs = 50m,
+            };
 
+            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(-1m);
@@ -166,11 +254,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplySeveralSwaps()
         {
-            await _service.ApplyItemsAsync(new[]
+            await _service.ApplySwapsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", "SP-User", 50000m, "USD", "SP-Broker"),
-                ClientToBroker(1m, "ETH", "SP-User", 4000m, "USD", "SP-Broker"),
-                ClientToBroker(9000m, "USD", "SP-User", 2m, "ETH", "SP-Broker"),
+                ClientToBroker(1m, "BTC", 50000m, "USD"),
+                ClientToBroker(1m, "ETH", 4000m, "USD"),
+                ClientToBroker(9000m, "USD", 2m, "ETH"),
             });
 
             var portfolio = _service.GetCurrentPortfolio();
@@ -183,10 +271,10 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task ApplySeveralSwapsZero()
         {
-            await _service.ApplyItemsAsync(new[]
+            await _service.ApplySwapsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
-                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker"),
+                ClientToBroker(1m, "BTC", 40000m, "USD"),
+                ClientToBroker(40000m, "USD", 10m, "ETH"),
             });
 
             var portfolio = _service.GetCurrentPortfolio();
@@ -196,24 +284,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             portfolio.Assets["ETH"].WalletBalances["Converter"].Balance.Should().Be(-10m);
         }
 
-        private PortfolioInputModel ClientToBroker(
-            decimal vol1, string asset1, string clientWallet,
-            decimal vol2, string asset2, string brokerWallet)
+        private SwapMessage ClientToBroker(decimal vol1, string asset1, decimal vol2, string asset2, string brokerWallet = "SP-Broker")
         {
-            return new PortfolioInputModel()
+            return new SwapMessage()
             {
-                From = new InputModel()
-                { 
-                    WalletId = clientWallet,
-                    Volume = vol1,
-                    AssetId = asset1,
-                },
-                To = new InputModel()
-                {
-                    WalletId = brokerWallet,
-                    Volume = vol2,
-                    AssetId = asset2,
-                },
+                AccountId1 = "User 1",
+                AccountId2 = "Broker",
+                AssetId1 = asset1,
+                AssetId2 = asset2,
+                BrokerId = "JetWallet",
+                Volume1 = vol1.ToString(),
+                Volume2 = vol2.ToString(),
+                WalletId1 = "SP-User 1",
+                WalletId2 = brokerWallet,
+                Id = "1",
+                MessageId = "1",
+                Timestamp = DateTime.Now,
+                DifferenceAsset = "USD",
+                DifferenceVolumeAbs = 50m,
             };
         }
 
@@ -234,10 +322,10 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _indexPricesMock.Set("USD", 1m);
             _indexPricesMock.Set("ETH", 4200m);
 
-            await _service.ApplyItemsAsync(new[]
+            await _service.ApplySwapsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
-                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker-1"),
+                ClientToBroker(1m, "BTC", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
             });
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Balance.Should().Be(1m);
@@ -269,10 +357,10 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _indexPricesMock.Set("USD", 1m);
             _indexPricesMock.Set("ETH", 4200m);
 
-            await _service.ApplyItemsAsync(new[]
+            await _service.ApplySwapsAsync(new[]
             {
-                ClientToBroker(1m, "BTC", "SP-User", 40000m, "USD", "SP-Broker"),
-                ClientToBroker(40000m, "USD", "SP-User", 10m, "ETH", "SP-Broker-1"),
+                ClientToBroker(1m, "BTC", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
             });
 
             await _service.SetDailyVelocityAsync("BTC", 0.01m);

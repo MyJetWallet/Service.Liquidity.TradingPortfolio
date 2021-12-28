@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Liquidity.TradingPortfolio", "src\Service.Liquidity.TradingPortfolio\Service.Liquidity.TradingPortfolio.csproj", "{740DF849-06AA-448E-8B09-91ECA236A051}"
 EndProject
@@ -30,7 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.github\workflows\update_nuget.yaml = .github\workflows\update_nuget.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Liquidity.TradingPortfolio.Domain", "src\Service.Liquidity.TradingPortfolio.Domain\Service.Liquidity.TradingPortfolio.Domain.csproj", "{5CFE74A4-CDBB-4E2D-9C0A-9CEF20DCB38B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Liquidity.TradingPortfolio.Domain", "src\Service.Liquidity.TradingPortfolio.Domain\Service.Liquidity.TradingPortfolio.Domain.csproj", "{5CFE74A4-CDBB-4E2D-9C0A-9CEF20DCB38B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
