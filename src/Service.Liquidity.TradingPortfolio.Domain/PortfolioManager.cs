@@ -7,6 +7,7 @@ using Service.Liquidity.PortfolioHedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
@@ -86,23 +87,30 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await _serviceBusPortfolioPublisher.PublishAsync(_portfolio);
         }
 
-        private async Task PublishPortfolioTradeAsync(IReadOnlyList<SwapMessage> messages)
-        {
-            var publishMessage = new PortfolioTrade()
-            {
+        //private async Task PublishPortfolioTradeAsync(string walletId1, string assetId1, decimal volume1,
+        //    string walletId2, string assetId2, decimal volume2)
+        //{
+        //    var publishMessages = messages
+        //         .Select(swap => new PortfolioTrade(
+        //             swap.Id,
+        //             swap.BrokerId,
+        //             swap.AssetId1 + "|" + swap.AssetId2,
 
-            };
-            await _serviceBusTradePublisher.PublishAsync(publishMessage);
-        }
+        //             )
+        //            ).ToList();
 
-        private async Task PublishPortfolioTradeAsync(IReadOnlyList<TradeMessage> messages)
-        {
-            var publishMessage = new PortfolioTrade()
-            {
 
-            };
-            await _serviceBusTradePublisher.PublishAsync(publishMessage);
-        }
+        //    await _serviceBusTradePublisher.PublishAsync(publishMessages);
+        //}
+
+        //private async Task PublishPortfolioTradeAsync(IReadOnlyList<TradeMessage> messages)
+        //{
+        //    var publishMessage = new PortfolioTrade()
+        //    {
+
+        //    };
+        //    await _serviceBusTradePublisher.PublishAsync(publishMessage);
+        //}
         private async Task PublishPortfolioFeeShareAsync(FeeShareEntity message)
         {
             var publishMessage = new FeeShareSettlement() 
@@ -113,43 +121,43 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 WalletTo = message.FeeShareWalletId,
                 Asset = message.FeeShareAsset,
                 Volume = message.FeeShareAmountInTargetAsset,
-                Comment = "",
+                Comment = $"FeeShareSettlement:{message.OperationId}",
                 ReferrerClientId = message.ReferrerClientId,
                 SettlementDate = DateTime.UtcNow,
             };
 
             await _serviceBusFeeSharePublisher.PublishAsync(publishMessage);
         }
-
-        private void ApplyItem(string WalletId1, string AssetId1, decimal Volume1,
-            string WalletId2, string AssetId2, decimal Volume2)
+        
+        private void ApplyItem(string walletId1, string assetId1, decimal volume1,
+            string walletId2, string assetId2, decimal volume2)
         {
-            var portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(WalletId2);
-            if (portfolioWallet != null)
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
+            if (basePortfolioWallet != null)
             {
                 // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(AssetId1);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(portfolioWallet);
-                walletBalance1.Balance += Convert.ToDecimal(Volume1);
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
+                walletBalance1.Balance -= Convert.ToDecimal(volume1);
 
                 // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(AssetId2);
-                var walletBalance2 = asset2.GetOrCreateWalletBalance(portfolioWallet);
-                walletBalance2.Balance -= Convert.ToDecimal(Volume2);
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(basePortfolioWallet);
+                walletBalance2.Balance += Convert.ToDecimal(volume2);
             }
 
-            portfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(WalletId1);
-            if (portfolioWallet != null)
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
+            if (quotePortfolioWallet != null)
             {
                 // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(AssetId1);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(portfolioWallet);
-                walletBalance1.Balance -= Convert.ToDecimal(Volume1);
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(quotePortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume1);
 
                 // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(AssetId2);
-                var walletBalance2 = asset2.GetOrCreateWalletBalance(portfolioWallet);
-                walletBalance2.Balance += Convert.ToDecimal(Volume2);
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(quotePortfolioWallet);
+                walletBalance2.Balance -= Convert.ToDecimal(volume2);
             }
         }
 
@@ -169,7 +177,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     );
             }
             await PublishPortfolioAsync();
-            await PublishPortfolioTradeAsync(messages);
         }
 
         public async Task ApplyTradesAsync(IReadOnlyList<TradeMessage> messages)
@@ -187,7 +194,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     );
             }
             await PublishPortfolioAsync();
-            await PublishPortfolioTradeAsync(messages);
+
         }
 
         public async Task ApplyFeeShareAsync(FeeShareEntity message)

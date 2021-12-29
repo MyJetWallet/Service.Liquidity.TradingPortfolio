@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using MyJetWallet.Domain.Orders;
 
 namespace Service.Liquidity.TradingPortfolio.Domain.Models
 {
@@ -10,12 +9,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     {
         public const string TopicName = "jetwallet-liquidity-trading-portfolio";
 
-        //TODO: Add [DataMember(Order = 1)]
-        public Dictionary<string, Asset> Assets { get; set; }
-        
-        public decimal TotalNetInUsd { get; set; }
-
-        public decimal TotalDailyVelocityRiskInUsd { get; set; }
+        [DataMember(Order = 1)] public Dictionary<string, Asset> Assets { get; set; }
+        [DataMember(Order = 2)] public decimal TotalNetInUsd { get; set; }
+        [DataMember(Order = 3)] public decimal TotalDailyVelocityRiskInUsd { get; set; }
 
         public Asset GetOrCreateAssetBySymbol(string symbol)
         {
@@ -31,14 +27,15 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             return asset;
         }
 
+        [DataContract]
         public class Asset
         {
-            public string Symbol { get; set; }
-            public Dictionary<string, WalletBalance> WalletBalances { get; set; }
-            public decimal NetBalance { get; set; }
-            public decimal NetBalanceInUsd { get; set; }
-            public decimal DailyVelocity { get; set; }
-            public decimal DailyVelocityRiskInUsd { get; set; }
+            [DataMember(Order = 1)] public string Symbol { get; set; }
+            [DataMember(Order = 2)] public Dictionary<string, WalletBalance> WalletBalances { get; set; }
+            [DataMember(Order = 3)] public decimal NetBalance { get; set; }
+            [DataMember(Order = 4)] public decimal NetBalanceInUsd { get; set; }
+            [DataMember(Order = 5)] public decimal DailyVelocity { get; set; }
+            [DataMember(Order = 6)] public decimal DailyVelocityRiskInUsd { get; set; }
 
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
@@ -46,8 +43,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                 {
                     walletBalance = new Portfolio.WalletBalance()
                     {
-                        Balance = 0,
-                        Wallet = portfolioWallet
+                        Balance = 0m,
+                        BalanceInUsd = 0m,
+                        Wallet = portfolioWallet,
                     };
                     WalletBalances[portfolioWallet.Id] = walletBalance;
                 }
@@ -65,11 +63,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
 
         }
 
+        [DataContract]
         public class WalletBalance
         {
-            public PortfolioWallet Wallet { get; set; }
-            public decimal Balance { get; set; }
-            public decimal BalanceInUsd { get; set; }
+            [DataMember(Order = 1)] public PortfolioWallet Wallet { get; set; }
+            [DataMember(Order = 2)] public decimal Balance { get; set; }
+            [DataMember(Order = 3)] public decimal BalanceInUsd { get; set; }
         }
     }
 }

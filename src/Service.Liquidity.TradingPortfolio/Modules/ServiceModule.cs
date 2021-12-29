@@ -8,6 +8,8 @@ using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Grpc;
+using Service.Liquidity.TradingPortfolio.Services;
 using Service.Liquidity.TradingPortfolio.Subscribers;
 
 namespace Service.Liquidity.TradingPortfolio.Modules
@@ -46,6 +48,9 @@ namespace Service.Liquidity.TradingPortfolio.Modules
 
             builder.RegisterType<SwapMessageSubscriber>().SingleInstance().AutoActivate();
             builder.RegisterType<PortfolioManager>().SingleInstance().As<IPortfolioManager>().AutoActivate();
+            builder.RegisterType<PortfolioWalletManager>().SingleInstance().As<IPortfolioWalletManager>().AutoActivate();
+            //Services            
+            builder.RegisterType<ManualInputService>().As<IManualInputService>();
         }
     }
 }

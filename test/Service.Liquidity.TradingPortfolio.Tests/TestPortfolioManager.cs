@@ -15,6 +15,21 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 {
     public class PortfolioWalletManagerMock : IPortfolioWalletManager
     {
+        public void AddExternalWallet(string walletId, string internalWalletId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddInternalWallet(string walletId, string internalWalletId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PortfolioWallet GetExternalWalletByWalletId(string walletId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Domain.Models.PortfolioWallet GetInternalWalletByWalletId(string walletId)
         {
             if (walletId == "SP-Broker")

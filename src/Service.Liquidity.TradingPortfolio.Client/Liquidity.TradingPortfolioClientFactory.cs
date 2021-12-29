@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using MyJetWallet.Sdk.Grpc;
+using Service.Liquidity.TradingPortfolio.Grpc;
 
 namespace Service.Liquidity.TradingPortfolio.Client
 {
@@ -10,6 +11,6 @@ namespace Service.Liquidity.TradingPortfolio.Client
         {
         }
 
-        //public IHelloService GetHelloService() => CreateGrpcService<IHelloService>();
+        public IManualInputService GetManualInputService() => CreateGrpcService<IManualInputService>();
     }
 }

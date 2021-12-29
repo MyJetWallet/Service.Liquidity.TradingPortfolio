@@ -12,6 +12,8 @@ using Prometheus;
 using ProtoBuf.Grpc.Server;
 using Service.Liquidity.TradingPortfolio.Modules;
 using SimpleTrading.ServiceStatusReporterConnector;
+using Service.Liquidity.TradingPortfolio.Grpc;
+using Service.Liquidity.TradingPortfolio.Services;
 
 namespace Service.Liquidity.TradingPortfolio
 {
@@ -43,7 +45,7 @@ namespace Service.Liquidity.TradingPortfolio
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapGrpcSchema<HelloService, IHelloService>();
+                endpoints.MapGrpcSchema<ManualInputService, IManualInputService>();
 
                 endpoints.MapGrpcSchemaRegistry();
 

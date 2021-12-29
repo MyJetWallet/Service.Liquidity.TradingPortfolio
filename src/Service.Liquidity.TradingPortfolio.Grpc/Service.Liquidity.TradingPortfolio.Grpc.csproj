@@ -12,8 +12,4 @@
     <ProjectReference Include="..\Service.Liquidity.TradingPortfolio.Domain.Models\Service.Liquidity.TradingPortfolio.Domain.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>
