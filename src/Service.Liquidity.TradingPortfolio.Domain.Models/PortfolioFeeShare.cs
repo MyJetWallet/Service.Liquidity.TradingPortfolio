@@ -4,9 +4,9 @@ using System.Runtime.Serialization;
 namespace Service.Liquidity.TradingPortfolio.Domain.Models
 {
     [DataContract]
-    public class FeeShareSettlement
+    public class PortfolioFeeShare
     {
-        public const string TopicName = "jetwallet-liquidity-trading-portfolio-feesharesettlement";
+        public const string TopicName = "jetwallet-liquidity-trading-portfolio-feeshare";
 
         [DataMember(Order = 1)] public string OperationId { get; set; }  // OperationId
         [DataMember(Order = 2)] public string BrokerId { get; set; }  // BrokerId

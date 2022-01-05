@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using MyJetWallet.Domain.Orders;
 
@@ -12,7 +11,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 1)] public string TradeId { get; set; }  // TradeMessage.Id & SwapMessage.Id
         [DataMember(Order = 2)] public string AssociateBrokerId { get; set; }  // TradeMessage.Id & SwapMessage.BrokerId
         [DataMember(Order = 3)] public string WalletName { get; set; }  // PortfolioWalletId
-        [DataMember(Order = 4)] public string AssociateSymbol { get; set; }  //TradeMessage.AssociateSymbol   SwapMessage.AssetId1|AssetId2
+        [DataMember(Order = 4)] public string AssociateSymbol { get; set; }  //TradeMessage.AssociateSymbol   SwapMessage.AssetId1|AssetId2 =  swap.AssetId1 + "|" + swap.AssetId2,
         [DataMember(Order = 5)] public string BaseAsset { get; set; } //TradeMessage.BaseAsset   SwapMessage.AssetId1
         [DataMember(Order = 6)] public string QuoteAsset { get; set; } //TradeMessage.BaseAsset   SwapMessage.AssetId2
         [DataMember(Order = 7)] public OrderSide Side { get; set; }  //TradeMessage.BaseAsset   SwapMessage.Buy проверить сторону 

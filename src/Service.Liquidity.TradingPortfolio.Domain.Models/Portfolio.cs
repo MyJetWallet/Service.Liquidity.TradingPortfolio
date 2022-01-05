@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 
 namespace Service.Liquidity.TradingPortfolio.Domain.Models
 {
+
     [DataContract]
     public class Portfolio
     {
@@ -60,7 +61,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                 }
                 return walletBalance;
             }
+        }
 
+        public Portfolio MakeCopy()
+        {
+            return Helper.CloneJson(this);
         }
 
         [DataContract]

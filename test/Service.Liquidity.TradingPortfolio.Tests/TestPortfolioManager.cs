@@ -73,16 +73,16 @@ namespace Service.Liquidity.TradingPortfolio.Tests
     }
 
 
-    public class PortfolioFeeSharePublisherMock : IServiceBusPublisher<FeeShareSettlement>
+    public class PortfolioFeeSharePublisherMock : IServiceBusPublisher<PortfolioFeeShare>
     {
-        public Action<FeeShareSettlement> Callback { get; set; }
+        public Action<PortfolioFeeShare> Callback { get; set; }
 
-        public async Task PublishAsync(FeeShareSettlement message)
+        public async Task PublishAsync(PortfolioFeeShare message)
         {
             Callback?.Invoke(message);
         }
 
-        public async Task PublishAsync(IEnumerable<FeeShareSettlement> messageList)
+        public async Task PublishAsync(IEnumerable<PortfolioFeeShare> messageList)
         {
             foreach (var message in messageList)
             {

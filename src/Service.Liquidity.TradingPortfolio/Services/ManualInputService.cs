@@ -22,8 +22,37 @@ namespace Service.Liquidity.TradingPortfolio.Services
             _logger = logger;
         }
 
+        public Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
 
-        public Task<DailyVelocityResponse> SetDailyVelocityAsync(DailyVelocityRequest request)
+        public Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<WalletResponse> DeleteInternalWalletAsync(WalletDeleteRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
         {
             throw new System.NotImplementedException();
         }

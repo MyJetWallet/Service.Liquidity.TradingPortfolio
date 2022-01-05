@@ -8,6 +8,18 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
     public interface IManualInputService
     {
         [OperationContract]
-        Task<DailyVelocityResponse> SetDailyVelocityAsync(DailyVelocityRequest request);
+        #region Manual Settings
+        Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request);
+        Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request);
+        #endregion
+        #region Wallets CRUD
+        Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request);
+        Task<WalletResponse> DeleteInternalWalletAsync(WalletDeleteRequest request);
+        Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request);
+        Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request);
+        #endregion
+        #region Portfolio
+        Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request);
+        #endregion
     }
 }

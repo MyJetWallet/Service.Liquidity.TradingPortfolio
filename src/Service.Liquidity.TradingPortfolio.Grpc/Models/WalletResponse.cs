@@ -3,7 +3,7 @@
 namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
     [DataContract]
-    public class DailyVelocityResponse
+    public class WalletResponse
     {
         [DataMember(Order = 1)] public bool Success { get; set; }
         [DataMember(Order = 2)] public string ErrorMessage { get; set; }
