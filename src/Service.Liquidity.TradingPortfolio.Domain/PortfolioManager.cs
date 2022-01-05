@@ -1,4 +1,5 @@
-﻿using MyJetWallet.Sdk.Service.Tools;
+﻿using MyJetWallet.Domain.Orders;
+using MyJetWallet.Sdk.Service.Tools;
 using MyJetWallet.Sdk.ServiceBus;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.IndexPrices.Client;
@@ -188,9 +189,39 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     message.AssetId2, 
                     Convert.ToDecimal(message.Volume2)
                     );
+
+                var (asset1IndexPrice, volume1InUsd) = 
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.AssetId1, Convert.ToDecimal(message.Volume1));
+
+                var (asset2IndexPrice, volume2InUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.AssetId2, Convert.ToDecimal(message.Volume2));
+
+                var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId1);
+                var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId2);
+
                 var portfolioTrade = new PortfolioTrade()
                 {
-                    //TODO: Fill PortfolioTrade
+                    TradeId = message.Id,
+                    AssociateBrokerId = message.BrokerId,
+                    BaseWalletName = baseWallet.InternalWalletId,
+                    QuoteWalletName = quoteWallet.InternalWalletId,
+                    AssociateSymbol = message.AssetId1 + "|" + message.AssetId2,
+                    BaseAsset = message.AssetId1,
+                    QuoteAsset = message.AssetId2,
+                    Side = OrderSide.Sell, //TODO: ???
+                    Price = Convert.ToDecimal(message.Volume2) / Convert.ToDecimal(message.Volume1), //TODO: ???
+                    BaseVolume = Convert.ToDecimal(message.Volume1),
+                    QuoteVolume = Convert.ToDecimal(message.Volume2),
+                    BaseVolumeInUsd = volume1InUsd,
+                    QuoteVolumeInUsd = volume2InUsd,
+                    BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
+                    QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
+                    DateTime = DateTime.UtcNow,
+                    Source = baseWallet.InternalWalletId, //TODO: ???
+                    Comment = "Swap",//TODO: ???
+                    FeeAsset = message.AssetId1,
+                    FeeVolume = Convert.ToDecimal(message.Volume1),
+                    User = "Converter" //TODO: ???
                 };
                 portfolioTrades.Add(portfolioTrade);
             }
@@ -213,15 +244,44 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     message.QuoteAsset,
                     message.OppositeVolume
                     );
-                
+
+                var (asset1IndexPrice, volume1InUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset, Convert.ToDecimal(message.Volume));
+
+                var (asset2IndexPrice, volume2InUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset, Convert.ToDecimal(message.OppositeVolume));
+
+                var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.AssociateWalletId);
+                var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.AssociateBrokerId);
+
                 var portfolioTrade = new PortfolioTrade()
                 {
-                    //TODO: Fill PortfolioTrade
+                    TradeId = message.Id,
+                    AssociateBrokerId = message.AssociateBrokerId,
+                    BaseWalletName = baseWallet.InternalWalletId,
+                    QuoteWalletName = quoteWallet.InternalWalletId,
+                    AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
+                    BaseAsset = message.BaseAsset,
+                    QuoteAsset = message.QuoteAsset,
+                    Side = message.Side,
+                    Price = message.Price,
+                    BaseVolume = Convert.ToDecimal(message.Volume),
+                    QuoteVolume = Convert.ToDecimal(message.OppositeVolume),
+                    BaseVolumeInUsd = volume1InUsd,
+                    QuoteVolumeInUsd = volume2InUsd,
+                    BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
+                    QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
+                    DateTime = DateTime.UtcNow,
+                    Source = message.Source,
+                    Comment = message.Comment,
+                    FeeAsset = message.FeeAsset,
+                    FeeVolume = Convert.ToDecimal(message.FeeVolume),
+                    User = message.User
                 };
                 portfolioTrades.Add(portfolioTrade);
             }
+            await PublishPortfolioTradesAsync(portfolioTrades);
             await PublishPortfolioAsync();
-
         }
 
         public async Task ApplyFeeShareAsync(FeeShareEntity message)
