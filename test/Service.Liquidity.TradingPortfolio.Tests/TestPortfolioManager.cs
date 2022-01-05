@@ -15,22 +15,31 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 {
     public class PortfolioWalletManagerMock : IPortfolioWalletManager
     {
-        public void AddExternalWallet(string walletId, string internalWalletId)
+        public void AddExternalWallet(string walletId, string brokerId, string sourceName)
         {
-            throw new NotImplementedException();
+            
         }
 
-        public void AddInternalWallet(string walletId, string internalWalletId)
+        public void AddInternalWallet(string walletId, string brokerId, string walletName)
         {
-            throw new NotImplementedException();
+
         }
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
         {
-            throw new NotImplementedException();
+            if (walletId == "SP-Broker")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Id = "Converter",
+                    InternalWalletId = "SP-Broker"
+                };
+
+            return null;
         }
 
-        public Domain.Models.PortfolioWallet GetInternalWalletByWalletId(string walletId)
+        public PortfolioWallet GetInternalWalletByWalletId(string walletId)
         {
             if (walletId == "SP-Broker")
                 return new Domain.Models.PortfolioWallet()
@@ -53,6 +62,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             return null;
         }
     }
+
 
     public class PortfolioPublisherMock : IServiceBusPublisher<Portfolio>
     {

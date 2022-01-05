@@ -3,6 +3,7 @@ using Service.IndexPrices.Client;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Grpc.Models;
+using System;
 using System.Threading.Tasks;
 
 namespace Service.Liquidity.TradingPortfolio.Services
@@ -24,12 +25,44 @@ namespace Service.Liquidity.TradingPortfolio.Services
 
         public Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                _portfolioWalletManager.AddExternalWallet(request.WalletId, request.BrokerId, request.Source);
+                return Task.FromResult(new WalletResponse()
+                {
+                    ErrorMessage = string.Empty,
+                    Success = true
+                });
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult(new WalletResponse()
+                {
+                    ErrorMessage = e.Message,
+                    Success = false
+                });
+            }
         }
 
         public Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                _portfolioWalletManager.AddInternalWallet(request.WalletId, request.BrokerId, request.WalletName);
+                return Task.FromResult(new WalletResponse()
+                {
+                    ErrorMessage = string.Empty,
+                    Success = true
+                });
+            }
+            catch (Exception e)
+            {
+                return Task.FromResult(new WalletResponse()
+                {
+                    ErrorMessage = e.Message,
+                    Success = false
+                });
+            }
         }
 
         public Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request)

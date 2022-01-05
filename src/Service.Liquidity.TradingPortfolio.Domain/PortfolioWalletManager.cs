@@ -8,21 +8,22 @@ namespace Service.Liquidity.TradingPortfolio.Domain
     {
         private Dictionary<string, PortfolioWallet> _wallets = new Dictionary<string,PortfolioWallet>();
 
-        public void AddExternalWallet(string walletId, string externalSource)
+        public void AddExternalWallet(string walletId, string brokerId, string sourceName)
         {
             if (!_wallets.TryGetValue(walletId, out var wallet))
             {
                 _wallets[walletId] = new PortfolioWallet()
                 {
                     IsInternal = false,
-                    ExternalSource = externalSource,
+                    ExternalSource = sourceName,
                     Id = null,
-                    InternalWalletId = walletId
+                    InternalWalletId = walletId,
+                    BrokerId = brokerId
                 };
             }
         }
 
-        public void AddInternalWallet(string walletId, string internalSourceId = "Converter")
+        public void AddInternalWallet(string walletId, string brokerId, string walletName = "Converter")
         {
             if (!_wallets.TryGetValue(walletId, out var wallet))
             {
@@ -30,18 +31,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 {
                     IsInternal = true,
                     ExternalSource = null,
-                    Id = internalSourceId,
-                    InternalWalletId = walletId
+                    Id = walletName,
+                    InternalWalletId = walletId,
+                    BrokerId = brokerId
                 };
             }
-            //if (walletId == "SP-Broker")
-            //    return new PortfolioWallet()
-            //    {
-            //        IsInternal = true,
-            //        ExternalSource = null,
-            //        Id = "Converter",
-            //        InternalWalletId = "SP-Broker"
-            //    };
         }
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
