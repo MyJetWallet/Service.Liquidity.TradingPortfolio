@@ -308,5 +308,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioFeeShareAsync(portfolioFeeShare);
             await PublishPortfolioAsync();
         }
+
+        public async Task ApplyBalanceAsync(string broker, string wallet, string asset, decimal balance)
+        {
+            _portfolio.GetOrCreateAssetBySymbol(asset).GetWalletBalanceByPortfolioWalletId(wallet).Balance = balance;
+            await PublishPortfolioAsync();
+        }
     }
 }

@@ -77,6 +77,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             //    };
             return null;
         }
+
+        public List<PortfolioWallet> GetWallets()
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

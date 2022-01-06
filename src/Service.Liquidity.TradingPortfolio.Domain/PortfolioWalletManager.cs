@@ -1,6 +1,6 @@
 ﻿using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
@@ -56,6 +56,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
             
             return wallet.IsInternal ==  true ? wallet : null;
+        }
+
+        public List<PortfolioWallet> GetWallets()
+        {
+            return _wallets.Values.ToList();
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         Task<WalletResponse> DeleteInternalWalletAsync(WalletDeleteRequest request);
         Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request);
         Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request);
+        Task<GetWalletsResponse> GetWalletsAsync();
         #endregion
         #region Portfolio
         Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request);

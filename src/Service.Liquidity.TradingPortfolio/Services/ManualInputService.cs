@@ -11,16 +11,19 @@ namespace Service.Liquidity.TradingPortfolio.Services
     public class ManualInputService : IManualInputService
     {
         private readonly IPortfolioWalletManager _portfolioWalletManager;
+        private readonly IPortfolioManager _portfolioManager;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly ILogger<ManualInputService> _logger;
 
         public ManualInputService(IPortfolioWalletManager portfolioWalletManager,
-            IIndexPricesClient indexPricesClient, 
-            ILogger<ManualInputService> logger)
+            IIndexPricesClient indexPricesClient,
+            ILogger<ManualInputService> logger, 
+            IPortfolioManager portfolioManager)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _indexPricesClient = indexPricesClient;
             _logger = logger;
+            _portfolioManager = portfolioManager;
         }
 
         public Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request)
@@ -77,12 +80,37 @@ namespace Service.Liquidity.TradingPortfolio.Services
 
         public Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request)
         {
-            throw new System.NotImplementedException();
+            return Task.FromResult(new PortfolioResponse()
+            {
+                Portfolio = _portfolioManager.GetCurrentPortfolio()
+            });
         }
 
-        public Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request)
+        public Task<GetWalletsResponse> GetWalletsAsync()
         {
-            throw new System.NotImplementedException();
+            return Task.FromResult(new GetWalletsResponse()
+            {
+                Wallets = _portfolioWalletManager.GetWallets()
+            });
+
+        }
+
+        public async Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request)
+        {
+            try
+            {
+                await _portfolioManager.ApplyBalanceAsync(
+                  request.Broker,
+                  request.Wallet,
+                  request.Asset,
+                  request.Balance);
+
+                return new SetBalanceResponse() { ErrorMessage = string.Empty, Success = true };
+            }
+            catch (Exception e)
+            {
+                return new SetBalanceResponse() { ErrorMessage = e.Message, Success = false };
+            }
         }
 
         public Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
