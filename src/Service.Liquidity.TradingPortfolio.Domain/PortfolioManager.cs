@@ -203,8 +203,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 {
                     TradeId = message.Id,
                     AssociateBrokerId = message.BrokerId,
-                    BaseWalletName = baseWallet.InternalWalletId,
-                    QuoteWalletName = quoteWallet.InternalWalletId,
+                    BaseWalletName = message.WalletId1,
+                    QuoteWalletName = message.WalletId2,
                     AssociateSymbol = message.AssetId1 + "|" + message.AssetId2,
                     BaseAsset = message.AssetId1,
                     QuoteAsset = message.AssetId2,
@@ -217,7 +217,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
                     QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
                     DateTime = DateTime.UtcNow,
-                    Source = baseWallet.InternalWalletId, //TODO: ???
+                    Source = baseWallet?.InternalWalletId ?? quoteWallet?.InternalWalletId ?? string.Empty, //TODO: ???
                     Comment = "Swap",//TODO: ???
                     FeeAsset = message.AssetId1,
                     FeeVolume = Convert.ToDecimal(message.Volume1),
@@ -258,8 +258,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 {
                     TradeId = message.Id,
                     AssociateBrokerId = message.AssociateBrokerId,
-                    BaseWalletName = baseWallet.InternalWalletId,
-                    QuoteWalletName = quoteWallet.InternalWalletId,
+                    BaseWalletName = message.AssociateWalletId,  //TODO: ???
+                    QuoteWalletName = message.AssociateWalletId, //TODO: ???
                     AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
                     BaseAsset = message.BaseAsset,
                     QuoteAsset = message.QuoteAsset,

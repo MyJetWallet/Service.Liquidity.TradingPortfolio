@@ -59,6 +59,22 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                     InternalWalletId = "SP-Broker-1"
                 };
 
+            //if (walletId == "SP-User 1")
+            //    return new Domain.Models.PortfolioWallet()
+            //    {
+            //        IsInternal = true,
+            //        ExternalSource = null,
+            //        Id = "User",
+            //        InternalWalletId = "SP-User 1"
+            //    };
+            //if (walletId == "SP-User 2")
+            //    return new Domain.Models.PortfolioWallet()
+            //    {
+            //        IsInternal = true,
+            //        ExternalSource = null,
+            //        Id = "User",
+            //        InternalWalletId = "SP-User 2"
+            //    };
             return null;
         }
     }
@@ -211,7 +227,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 DifferenceVolumeAbs = 50m,
             };
 
-            await _service.ApplySwapsAsync(new[] { swaps });
+        await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(1m);
@@ -231,8 +247,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 BrokerId = "JetWallet",
                 Volume1 = "1.0",
                 Volume2 = "50000.0",
-                WalletId1 = "User 1",
-                WalletId2 = "User 2",
+                WalletId1 = "SP-User 1",
+                WalletId2 = "SP-User 2",
                 Id = "1",
                 MessageId = "1",
                 Timestamp = DateTime.Now,
