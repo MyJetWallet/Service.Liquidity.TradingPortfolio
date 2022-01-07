@@ -87,6 +87,16 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         {
             throw new NotImplementedException();
         }
+
+        Task IPortfolioWalletManager.AddExternalWallet(string walletName, string brokerId, string sourceName)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task IPortfolioWalletManager.AddInternalWallet(string walletId, string brokerId, string walletName)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
