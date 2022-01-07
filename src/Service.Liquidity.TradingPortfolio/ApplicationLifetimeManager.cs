@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyJetWallet.Sdk.ServiceBus;
+using Service.Liquidity.TradingPortfolio.Domain;
 
 namespace Service.Liquidity.TradingPortfolio
 {
@@ -12,17 +13,20 @@ namespace Service.Liquidity.TradingPortfolio
         private readonly ILogger<ApplicationLifetimeManager> _logger;
         private readonly ServiceBusLifeTime _serviceBusLifeTime;
         private readonly MyNoSqlClientLifeTime _myNoSqlClientLifeTime;
+        private readonly PortfolioWalletManager _portfolioWalletManager;
 
         public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, 
             ILogger<ApplicationLifetimeManager> logger,
             ServiceBusLifeTime serviceBusLifeTime,
-            MyNoSqlClientLifeTime myNoSqlClientLifeTime)
+            MyNoSqlClientLifeTime myNoSqlClientLifeTime,
+            PortfolioWalletManager portfolioWalletManager)
             : base(appLifetime)
         {
             this.appLifetime = appLifetime;
             _logger = logger;
             _serviceBusLifeTime = serviceBusLifeTime;
             _myNoSqlClientLifeTime = myNoSqlClientLifeTime;
+            _portfolioWalletManager = portfolioWalletManager;
         }
 
         protected override void OnStarted()
@@ -30,6 +34,7 @@ namespace Service.Liquidity.TradingPortfolio
             _logger.LogInformation("OnStarted has been called.");
             _myNoSqlClientLifeTime.Start();
             _serviceBusLifeTime.Start();
+            _portfolioWalletManager.Load();
         }
 
         protected override void OnStopping()

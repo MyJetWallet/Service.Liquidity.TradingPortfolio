@@ -311,7 +311,15 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
         public async Task ApplyBalanceAsync(string broker, string wallet, string asset, decimal balance)
         {
-            _portfolio.GetOrCreateAssetBySymbol(asset).GetWalletBalanceByPortfolioWalletId(wallet).Balance = balance;
+            var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+            var portfolioWallet = _portfolioWalletManager.GetWalleteByWalletId(wallet);
+            if (portfolioWallet == null)
+            {
+                throw new Exception($"Can't find portfolio wallet: {wallet}");
+            }
+            var walletBalance = portfolioAsset.GetOrCreateWalletBalance(portfolioWallet);
+            walletBalance.Balance = balance;
+
             await PublishPortfolioAsync();
         }
     }

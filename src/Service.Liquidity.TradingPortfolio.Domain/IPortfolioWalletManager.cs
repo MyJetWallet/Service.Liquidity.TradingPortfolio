@@ -1,14 +1,16 @@
 ﻿using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
     public interface IPortfolioWalletManager
     {
         PortfolioWallet GetInternalWalletByWalletId(string walletId);
-        void AddInternalWallet(string walletId, string brokerId, string walletName);
+        Task AddInternalWallet(string walletId, string brokerId, string walletName);
         PortfolioWallet GetExternalWalletByWalletId(string walletId);
-        void AddExternalWallet(string walletId, string brokerId, string sourceName);
+        Task AddExternalWallet(string walletName, string brokerId, string sourceName);
         List<PortfolioWallet> GetWallets();
+        PortfolioWallet GetWalleteByWalletId(string walletId);
     }
 }

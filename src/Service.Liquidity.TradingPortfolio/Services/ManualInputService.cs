@@ -30,7 +30,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                _portfolioWalletManager.AddExternalWallet(request.WalletId, request.BrokerId, request.Source);
+                _portfolioWalletManager.AddExternalWallet(request.WalletName, request.BrokerId, request.Source);
                 return Task.FromResult(new WalletResponse()
                 {
                     ErrorMessage = string.Empty,

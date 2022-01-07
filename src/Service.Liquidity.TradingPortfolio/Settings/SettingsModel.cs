@@ -17,6 +17,9 @@ namespace Service.Liquidity.TradingPortfolio.Settings
         [YamlProperty("LiquidityTradingPortfolio.MyNoSqlReaderHostPort")]
         public string MyNoSqlReaderHostPort { get; set; }
 
+        [YamlProperty("LiquidityTradingPortfolio.MyNoSqlWriterUrl")]
+        public string MyNoSqlWriterUrl { get; set; }
+
         [YamlProperty("LiquidityTradingPortfolio.BaseCurrencyConverterGrpcServiceUrl")]
         public string BaseCurrencyConverterGrpcServiceUrl { get; set; }
 

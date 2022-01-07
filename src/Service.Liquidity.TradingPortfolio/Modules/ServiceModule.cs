@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Core;
 using Autofac.Core.Registration;
+using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.ServiceBus;
 using MyServiceBus.Abstractions;
 using Service.FeeShareEngine.Domain.Models.Models;
@@ -8,6 +9,7 @@ using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Services;
 using Service.Liquidity.TradingPortfolio.Subscribers;
@@ -48,9 +50,10 @@ namespace Service.Liquidity.TradingPortfolio.Modules
 
             builder.RegisterType<SwapMessageSubscriber>().SingleInstance().AutoActivate();
             builder.RegisterType<PortfolioManager>().SingleInstance().As<IPortfolioManager>().AutoActivate();
-            builder.RegisterType<PortfolioWalletManager>().SingleInstance().As<IPortfolioWalletManager>().AutoActivate();
+            builder.RegisterType<PortfolioWalletManager>().SingleInstance().As<IPortfolioWalletManager>().AutoActivate().AsSelf();
             //Services            
             builder.RegisterType<ManualInputService>().As<IManualInputService>();
+            builder.RegisterMyNoSqlWriter<PortfolioWalletNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), PortfolioWalletNoSql.TableName);
         }
     }
 }
