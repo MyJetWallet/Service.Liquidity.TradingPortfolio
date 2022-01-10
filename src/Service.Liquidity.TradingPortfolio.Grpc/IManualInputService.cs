@@ -20,7 +20,7 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         Task<GetWalletsResponse> GetWalletsAsync();
         #endregion
         #region Portfolio
-        Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request);
+        Task<PortfolioResponse> GetPortfolioAsync();
         #endregion
     }
 }

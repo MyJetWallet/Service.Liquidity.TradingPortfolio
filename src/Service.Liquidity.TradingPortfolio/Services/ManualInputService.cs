@@ -78,7 +78,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
             throw new System.NotImplementedException();
         }
 
-        public Task<PortfolioResponse> GetPortfolioAsync(PortfolioRequest request)
+        public Task<PortfolioResponse> GetPortfolioAsync()
         {
             return Task.FromResult(new PortfolioResponse()
             {
