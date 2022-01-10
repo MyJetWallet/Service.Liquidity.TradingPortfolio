@@ -78,12 +78,12 @@ namespace Service.Liquidity.TradingPortfolio.Services
             throw new System.NotImplementedException();
         }
 
-        public Task<PortfolioResponse> GetPortfolioAsync()
+        public async Task<PortfolioResponse> GetPortfolioAsync()
         {
-            return Task.FromResult(new PortfolioResponse()
+            return new PortfolioResponse()
             {
                 Portfolio = _portfolioManager.GetCurrentPortfolio()
-            });
+            };
         }
 
         public Task<GetWalletsResponse> GetWalletsAsync()
