@@ -1,7 +1,7 @@
-﻿using Service.Liquidity.TradingPortfolio.Domain.Models;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 
-namespace Service.Liquidity.TradingPortfolio.Grpc
+namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
     [DataContract]
     public class PortfolioResponse

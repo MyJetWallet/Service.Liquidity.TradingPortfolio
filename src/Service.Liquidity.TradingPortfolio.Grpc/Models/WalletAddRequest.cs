@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Service.Liquidity.TradingPortfolio.Grpc
+namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
     [DataContract]
     public class WalletAddRequest
