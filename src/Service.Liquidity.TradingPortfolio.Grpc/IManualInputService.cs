@@ -13,8 +13,11 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         
         [OperationContract]
         Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request);
+
+        [OperationContract]
+        Task <SetSettlementResponse> SetSettlementAsync(SetSettlementRequest request);
         #endregion
-        
+
         #region Wallets CRUD
         [OperationContract]
         Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request);
@@ -26,7 +29,7 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request);
         
         [OperationContract]
-        Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request);
+        Task<WalletResponse> DeleteExternalWalletAsync(WalletDeleteRequest request);
         
         [OperationContract]
         Task<GetWalletsResponse> GetWalletsAsync();

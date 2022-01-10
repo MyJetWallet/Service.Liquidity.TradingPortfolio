@@ -5,6 +5,7 @@ using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Grpc.Models;
 using System;
 using System.Threading.Tasks;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 
 namespace Service.Liquidity.TradingPortfolio.Services
 {
@@ -47,35 +48,100 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
         }
 
-        public Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
+        public async Task<SetSettlementResponse> SetSettlementAsync(SetSettlementRequest request)
         {
             try
             {
-                _portfolioWalletManager.AddInternalWallet(request.WalletId, request.BrokerId, request.WalletName);
-                return Task.FromResult(new WalletResponse()
+                await _portfolioManager.SetManualSettelmentAsync(new ManualSettlement
                 {
-                    ErrorMessage = string.Empty,
-                    Success = true
+                    BrokerId = request.BrokerId,
+                    User = request.User,
+                    SettlementDate = DateTime.UtcNow,
+                    Asset = request.Asset,
+                    VolumeFrom = request.VolumeFrom,
+                    VolumeTo = request.VolumeTo,
+                    Comment = request.Comment,
+                    WalletTo = request.WalletTo,
+                    WalletFrom = request.WalletFrom,
+
                 });
+                return new SetSettlementResponse()
+                {
+                    Success = true,
+                    ErrorMessage = string.Empty
+                };
+
             }
             catch (Exception e)
             {
-                return Task.FromResult(new WalletResponse()
+                return new SetSettlementResponse()
                 {
-                    ErrorMessage = e.Message,
-                    Success = false
-                });
+                    Success = false,
+                    ErrorMessage = $"Can't set new settelment by user {request.User}"
+                };
             }
         }
 
-        public Task<WalletResponse> DeleteExternalWalletAsync(SetVelocityRequest request)
+        public async Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {   await _portfolioWalletManager.AddInternalWallet(request.WalletId, request.BrokerId, request.WalletName);
+                return new WalletResponse()
+                {
+                    ErrorMessage = string.Empty,
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new WalletResponse()
+                {
+                    ErrorMessage = e.Message,
+                    Success = false
+                };
+            }
         }
 
-        public Task<WalletResponse> DeleteInternalWalletAsync(WalletDeleteRequest request)
+        public async Task<WalletResponse> DeleteExternalWalletAsync(WalletDeleteRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                await _portfolioWalletManager.DeleteExternalWallet(request.WalletId);
+                return new WalletResponse()
+                {
+                    ErrorMessage = string.Empty,
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new WalletResponse()
+                {
+                    ErrorMessage = e.Message,
+                    Success = false
+                };
+            }
+        }
+
+        public async Task<WalletResponse> DeleteInternalWalletAsync(WalletDeleteRequest request)
+        {
+            try
+            {
+                await _portfolioWalletManager.DeleteInternalWallet(request.WalletId);
+                return new WalletResponse()
+                {
+                    ErrorMessage = string.Empty,
+                    Success = true
+                };
+            }
+            catch (Exception e)
+            {
+                return new WalletResponse()
+                {
+                    ErrorMessage = e.Message,
+                    Success = false
+                };
+            }
         }
 
         public async Task<PortfolioResponse> GetPortfolioAsync()
@@ -99,9 +165,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioManager.ApplyBalanceAsync(
-                  request.Broker,
-                  request.Wallet,
+                await _portfolioManager.SetManualBalanceAsync(request.Wallet,
                   request.Asset,
                   request.Balance);
 
@@ -113,9 +177,20 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
         }
 
-        public Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
+        public async Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                await _portfolioManager.SetDailyVelocityAsync(
+                    request.Asset,
+                    request.Velocity);
+
+                return new SetVelocityResponse() { ErrorMessage = string.Empty, Success = true };
+            }
+            catch (Exception e)
+            {
+                return new SetVelocityResponse() { ErrorMessage = e.Message, Success = false };
+            }
         }
     }
 }

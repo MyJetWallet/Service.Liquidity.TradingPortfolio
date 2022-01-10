@@ -80,6 +80,38 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return wallet;
         }
 
+        public async Task DeleteInternalWallet(string walletId)
+        {
+            if (!_wallets.TryGetValue(walletId, out var wallet))
+            {
+                return;
+            }
+
+            if (wallet.IsInternal)
+            {
+                await _myNoSqlWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(), 
+                    PortfolioWalletNoSql.GenerateRowKey(walletId));
+                
+                var isRemoved = _wallets.Remove(walletId);
+            }
+        }
+
+        public async Task DeleteExternalWallet(string walletId)
+        {
+            if (!_wallets.TryGetValue(walletId, out var wallet))
+            {
+                return;
+            }
+
+            if (wallet.IsInternal == false)
+            {
+                await _myNoSqlWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(),
+                    PortfolioWalletNoSql.GenerateRowKey(walletId));
+
+                var isRemoved = _wallets.Remove(walletId);
+            }
+        }
+
         public List<PortfolioWallet> GetWallets()
         {
             return _wallets.Values.ToList();

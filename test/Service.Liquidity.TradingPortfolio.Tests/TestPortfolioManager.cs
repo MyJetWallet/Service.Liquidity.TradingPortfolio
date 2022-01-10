@@ -15,16 +15,6 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 {
     public class PortfolioWalletManagerMock : IPortfolioWalletManager
     {
-        public void AddExternalWallet(string walletId, string brokerId, string sourceName)
-        {
-            
-        }
-
-        public void AddInternalWallet(string walletId, string brokerId, string walletName)
-        {
-
-        }
-
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
         {
             if (walletId == "SP-Broker")
@@ -79,6 +69,16 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
 
         public PortfolioWallet GetWalleteByWalletId(string walletId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteInternalWallet(string walletId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteExternalWallet(string walletId)
         {
             throw new NotImplementedException();
         }
@@ -155,6 +155,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
     }
 
+    public class PortfolioManualSettlementPublisherMock : IServiceBusPublisher<ManualSettlement>
+    {
+        public Action<ManualSettlement> Callback { get; set; }
+
+        public async Task PublishAsync(ManualSettlement message)
+        {
+            Callback?.Invoke(message);
+        }
+
+        public async Task PublishAsync(IEnumerable<ManualSettlement> messageList)
+        {
+            foreach (var message in messageList)
+            {
+                Callback?.Invoke(message);
+            }
+        }
+    }
+
     public class IndexPricesMock : IIndexPricesClient
     {
         public Dictionary<string, IndexPrice> Prices = new Dictionary<string, IndexPrice>();
@@ -209,6 +227,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public IndexPricesMock _indexPricesMock = new IndexPricesMock();
         public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
         public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
+        private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
 
         [SetUp]
         public void Setup()
@@ -217,7 +236,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 _portfolioPublisherMock,
                 _indexPricesMock,
                 _portfolioFeeSharePublisherMock,
-                _portfolioTraderPublisherMock);
+                _portfolioTraderPublisherMock,
+                _portfolioManualSettelmentMock);
         }
 
         [Test]

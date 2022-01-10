@@ -19,6 +19,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IServiceBusPublisher<Portfolio> _serviceBusPortfolioPublisher;
         private readonly IServiceBusPublisher<PortfolioFeeShare> _serviceBusFeeSharePublisher;
         private readonly IServiceBusPublisher<PortfolioTrade> _serviceBusTradePublisher;
+        private readonly IServiceBusPublisher<ManualSettlement> _serviceBusManualSettementBusPublisher;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
 
@@ -31,13 +32,15 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IServiceBusPublisher<Portfolio> serviceBusPublisher,
             IIndexPricesClient indexPricesClient,
             IServiceBusPublisher<PortfolioFeeShare> serviceBusFeeSharePublisher, 
-            IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher)
+            IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher, 
+            IServiceBusPublisher<ManualSettlement> serviceBusManualSettementBusPublisher)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
             _indexPricesClient = indexPricesClient;
             _serviceBusFeeSharePublisher = serviceBusFeeSharePublisher;
             _serviceBusTradePublisher = serviceBusTradePublisher;
+            _serviceBusManualSettementBusPublisher = serviceBusManualSettementBusPublisher;
         }
 
         public Portfolio GetCurrentPortfolio()
@@ -173,6 +176,41 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
         }
 
+        private void ApplySettelmentItem(string assetId, string walletId1, decimal volume1,
+            string walletId2, decimal volume2)
+        {
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
+            if (basePortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
+                walletBalance1.Balance -= Convert.ToDecimal(volume1);
+            }
+
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
+            if (quotePortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(quotePortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume2);
+            }
+
+            var baseExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId1);
+            if (baseExPortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
+                walletBalance1.Balance -= Convert.ToDecimal(volume1);
+            }
+
+            var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId2);
+            if (quoteExPortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(quotePortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume2);
+            }
+        }
 
         public async Task ApplySwapsAsync(IReadOnlyList<SwapMessage> messages)
         {
@@ -309,8 +347,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
-        public async Task ApplyBalanceAsync(string broker, string wallet, string asset, decimal balance)
+        public async Task SetManualBalanceAsync(string wallet, string asset, decimal balance)
         {
+            using var locker = await _myLocker.GetLocker();
+
             var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
             var portfolioWallet = _portfolioWalletManager.GetWalleteByWalletId(wallet);
             if (portfolioWallet == null)
@@ -321,6 +361,37 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             walletBalance.Balance = balance;
 
             await PublishPortfolioAsync();
+        }
+
+        public async Task SetManualVelocityAsync(string asset, decimal velocity)
+        {
+            using var locker = await _myLocker.GetLocker();
+
+            var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+            if (portfolioAsset != null)
+            {
+                portfolioAsset.DailyVelocity = velocity;
+            }
+            await PublishPortfolioAsync();
+        }
+
+        public async Task SetManualSettelmentAsync(ManualSettlement message)
+        {
+            ApplySettelmentItem(
+                message.Asset,
+                message.WalletFrom,
+                message.VolumeFrom,
+                message.WalletTo,
+                message.VolumeTo
+            );
+
+            await PublishPortfolioSettelmentAsync(message);
+            await PublishPortfolioAsync();
+        }
+
+        private async Task PublishPortfolioSettelmentAsync(ManualSettlement message)
+        {
+            await _serviceBusManualSettementBusPublisher.PublishAsync(message);
         }
     }
 }

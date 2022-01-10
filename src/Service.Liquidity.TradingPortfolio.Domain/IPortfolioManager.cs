@@ -14,6 +14,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         Task ApplyFeeShareAsync(FeeShareEntity message);
         Task SetDailyVelocityAsync(string assetSymbol, decimal velocity);
         Portfolio GetCurrentPortfolio();
-        Task ApplyBalanceAsync(string broker, string wallet, string asset, decimal balance);
+        Task SetManualBalanceAsync(string wallet, string asset, decimal balance);
+        Task SetManualVelocityAsync(string asset, decimal value);
+        Task SetManualSettelmentAsync(ManualSettlement manualSettlement);
     }
 }
