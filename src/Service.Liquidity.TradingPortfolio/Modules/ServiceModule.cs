@@ -45,16 +45,18 @@ namespace Service.Liquidity.TradingPortfolio.Modules
             builder.RegisterMyServiceBusPublisher<ChangeBalanceHistory>(serviceBusClient, ChangeBalanceHistory.TopicName, true);
             builder.RegisterMyServiceBusPublisher<PortfolioSettlement>(serviceBusClient, PortfolioSettlement.TopicName, true);
             builder.RegisterMyServiceBusPublisher<PortfolioFeeShare>(serviceBusClient, PortfolioFeeShare.TopicName, true);
-            builder.RegisterMyServiceBusPublisher<PortfolioManualTrade>(serviceBusClient, PortfolioManualTrade.TopicName, true);
-
             builder.RegisterMyServiceBusPublisher<Portfolio>(serviceBusClient, Portfolio.TopicName, true);
 
             builder.RegisterType<SwapMessageSubscriber>().SingleInstance().AutoActivate();
-            builder.RegisterType<PortfolioManager>().SingleInstance().As<IPortfolioManager>().AutoActivate();
+
+            builder.RegisterType<PortfolioManager>().SingleInstance().As<IPortfolioManager>().AutoActivate().AsSelf(); ;
             builder.RegisterType<PortfolioWalletManager>().SingleInstance().As<IPortfolioWalletManager>().AutoActivate().AsSelf();
             //Services            
             builder.RegisterType<ManualInputService>().As<IManualInputService>();
+            
+            //MyNoSql
             builder.RegisterMyNoSqlWriter<PortfolioWalletNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), PortfolioWalletNoSql.TableName);
+            builder.RegisterMyNoSqlWriter<PortfolioNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), PortfolioNoSql.TableName);
         }
     }
 }

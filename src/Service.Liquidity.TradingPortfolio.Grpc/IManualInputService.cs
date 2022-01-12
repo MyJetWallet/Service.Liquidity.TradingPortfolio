@@ -17,9 +17,6 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         [OperationContract]
         Task <SettlementResponse> SetSettlementAsync(SettlementRequest request);
 
-        [OperationContract]
-        Task<TradeResponse> SetTradeAsync(TradeRequest request);
-
         #endregion
 
         #region Wallets CRUD

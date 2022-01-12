@@ -14,12 +14,14 @@ namespace Service.Liquidity.TradingPortfolio
         private readonly ServiceBusLifeTime _serviceBusLifeTime;
         private readonly MyNoSqlClientLifeTime _myNoSqlClientLifeTime;
         private readonly PortfolioWalletManager _portfolioWalletManager;
+        private readonly PortfolioManager _portfolioManager;
 
         public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime, 
             ILogger<ApplicationLifetimeManager> logger,
             ServiceBusLifeTime serviceBusLifeTime,
             MyNoSqlClientLifeTime myNoSqlClientLifeTime,
-            PortfolioWalletManager portfolioWalletManager)
+            PortfolioWalletManager portfolioWalletManager, 
+            PortfolioManager portfolioManager)
             : base(appLifetime)
         {
             this.appLifetime = appLifetime;
@@ -27,6 +29,7 @@ namespace Service.Liquidity.TradingPortfolio
             _serviceBusLifeTime = serviceBusLifeTime;
             _myNoSqlClientLifeTime = myNoSqlClientLifeTime;
             _portfolioWalletManager = portfolioWalletManager;
+            _portfolioManager = portfolioManager;
         }
 
         protected override void OnStarted()
@@ -34,6 +37,7 @@ namespace Service.Liquidity.TradingPortfolio
             _logger.LogInformation("OnStarted has been called.");
             _myNoSqlClientLifeTime.Start();
             _serviceBusLifeTime.Start();
+            _portfolioManager.Load();
             _portfolioWalletManager.Load();
         }
 

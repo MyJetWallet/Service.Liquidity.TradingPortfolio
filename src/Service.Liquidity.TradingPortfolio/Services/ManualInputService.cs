@@ -82,42 +82,6 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
         }
 
-        public async Task<TradeResponse> SetTradeAsync(TradeRequest request)
-        {
-            try
-            {
-                await _portfolioManager.SetManualTradeAsync(new PortfolioManualTrade
-                {
-                    BrokerId = request.BrokerId,
-                    User = request.User,
-                    AssociateSymbol = request.AssociateSymbol,
-                    Comment = request.Comment,
-                    QuoteAsset = request.QuoteAsset,
-                    QuoteVolume = request.QuoteVolume,
-                    BaseAsset = request.BaseAsset,
-                    BaseVolume = request.BaseVolume,
-                    FeeAsset = request.FeeAsset,
-                    FeeVolume = request.FeeVolume,
-                    Price = request.Price,
-                    WalletName = request.WalletName
-                });
-                return new TradeResponse()
-                {
-                    Success = true,
-                    ErrorMessage = string.Empty
-                };
-
-            }
-            catch (Exception e)
-            {
-                return new TradeResponse()
-                {
-                    Success = false,
-                    ErrorMessage = $"Can't set new settelment by user {request.User}"
-                };
-            }
-        }
-
         public async Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
         {
             try

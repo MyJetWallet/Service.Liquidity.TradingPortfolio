@@ -1,7 +1,5 @@
 using Autofac;
 using MyJetWallet.Sdk.NoSql;
-using Service.AssetsDictionary.Client;
-using Service.BaseCurrencyConverter.Client;
 using Service.IndexPrices.Client;
 
 namespace Service.Liquidity.TradingPortfolio.Modules

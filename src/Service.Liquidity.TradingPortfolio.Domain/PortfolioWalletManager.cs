@@ -9,18 +9,18 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 {
     public class PortfolioWalletManager : IPortfolioWalletManager
     {
-        private readonly IMyNoSqlServerDataWriter<PortfolioWalletNoSql> _myNoSqlWriter;
+        private readonly IMyNoSqlServerDataWriter<PortfolioWalletNoSql> _myNoSqlWalletWriter;
         private Dictionary<string, PortfolioWallet> _wallets = new Dictionary<string,PortfolioWallet>();
 
         
-        public PortfolioWalletManager(IMyNoSqlServerDataWriter<PortfolioWalletNoSql> myNoSqlWriter)
+        public PortfolioWalletManager(IMyNoSqlServerDataWriter<PortfolioWalletNoSql> myNoSqlWalletWriter)
         {
-            _myNoSqlWriter = myNoSqlWriter;
+            _myNoSqlWalletWriter = myNoSqlWalletWriter;
         }
 
         public void Load()
         {
-            var data = _myNoSqlWriter.GetAsync().GetAwaiter().GetResult();
+            var data = _myNoSqlWalletWriter.GetAsync().GetAwaiter().GetResult();
             _wallets = data.Select(e => e.Wallet).ToDictionary(e => e.Id);
         }
 
@@ -33,7 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 Id = walletName,
             };
             _wallets[portfolioWallet.Id] = portfolioWallet;
-            await _myNoSqlWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
+            await _myNoSqlWalletWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
         }
 
         public async Task AddInternalWallet(string walletId, string brokerId, string walletName)
@@ -47,7 +47,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 BrokerId = brokerId
             };
             _wallets[portfolioWallet.Id] = portfolioWallet;
-            await _myNoSqlWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
+            await _myNoSqlWalletWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
         }
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
@@ -89,7 +89,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
             if (wallet.IsInternal)
             {
-                await _myNoSqlWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(), 
+                await _myNoSqlWalletWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(), 
                     PortfolioWalletNoSql.GenerateRowKey(walletId));
                 
                 var isRemoved = _wallets.Remove(walletId);
@@ -105,7 +105,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
             if (wallet.IsInternal == false)
             {
-                await _myNoSqlWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(),
+                await _myNoSqlWalletWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(),
                     PortfolioWalletNoSql.GenerateRowKey(walletId));
 
                 var isRemoved = _wallets.Remove(walletId);

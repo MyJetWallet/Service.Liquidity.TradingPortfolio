@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MyJetWallet.Sdk.ServiceBus;
+using MyNoSqlServer.Abstractions;
 using NUnit.Framework;
 using Service.IndexPrices.Client;
 using Service.IndexPrices.Domain.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 
 namespace Service.Liquidity.TradingPortfolio.Tests
 {
@@ -173,22 +175,113 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
     }
 
-    public class PortfolioManualTradePublisherMock : IServiceBusPublisher<PortfolioManualTrade>
+    public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSql>
     {
-        public Action<PortfolioManualTrade> Callback { get; set; }
-        public async Task PublishAsync(PortfolioManualTrade message)
+        private Portfolio _portfolio = new();
+        public async ValueTask InsertAsync(PortfolioNoSql entity)
         {
-            Callback?.Invoke(message);
+            _portfolio = entity.Portfolio;
         }
 
-        public async Task PublishAsync(IEnumerable<PortfolioManualTrade> messageList)
+        public async ValueTask InsertOrReplaceAsync(PortfolioNoSql entity)
         {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
+            _portfolio = entity.Portfolio;
+        }
+
+        public ValueTask CleanAndKeepLastRecordsAsync(string partitionKey, int amount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask BulkInsertOrReplaceAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask CleanAndBulkInsertAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask CleanAndBulkInsertAsync(string partitionKey, IEnumerable<PortfolioNoSql> entity,
+            DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<OperationResult> ReplaceAsync(string partitionKey, string rowKey, Func<PortfolioNoSql, bool> updateCallback,
+            DataSynchronizationPeriod syncPeriod = DataSynchronizationPeriod.Sec5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<OperationResult> MergeAsync(string partitionKey, string rowKey, Func<PortfolioNoSql, bool> updateCallback,
+            DataSynchronizationPeriod syncPeriod = DataSynchronizationPeriod.Sec5)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
+        {
+            return new List<PortfolioNoSql>() { PortfolioNoSql.Create(_portfolio) };
+        }
+
+        public IAsyncEnumerable<PortfolioNoSql> GetAllAsync(int bulkRecordsCount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IEnumerable<PortfolioNoSql>> GetAsync(string partitionKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<PortfolioNoSql> GetAsync(string partitionKey, string rowKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IReadOnlyList<PortfolioNoSql>> GetMultipleRowKeysAsync(string partitionKey, IEnumerable<string> rowKeys)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<PortfolioNoSql> DeleteAsync(string partitionKey, string rowKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IEnumerable<PortfolioNoSql>> QueryAsync(string query)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<IEnumerable<PortfolioNoSql>> GetHighestRowAndBelow(string partitionKey, string rowKeyFrom, int amount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask CleanAndKeepMaxPartitions(int maxAmount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask CleanAndKeepMaxRecords(string partitionKey, int maxAmount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<int> GetCountAsync(string partitionKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<ITransactionsBuilder<PortfolioNoSql>> BeginTransactionAsync()
+        {
+            throw new NotImplementedException();
         }
     }
+
 
     public class IndexPricesMock : IIndexPricesClient
     {
@@ -245,7 +338,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
         public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
         private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
-        private PortfolioManualTradePublisherMock _portfolioManualTradeMock = new PortfolioManualTradePublisherMock();
+        private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
 
         [SetUp]
         public void Setup()
@@ -256,7 +349,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 _portfolioFeeSharePublisherMock,
                 _portfolioTraderPublisherMock,
                 _portfolioManualSettelmentMock,
-                _portfolioManualTradeMock);
+                _myNoSqlPortfolioWriter);
         }
 
         [Test]
@@ -479,5 +572,4 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-1250m);
         }
     }
-
 }
