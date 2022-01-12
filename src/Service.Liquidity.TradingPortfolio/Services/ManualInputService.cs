@@ -48,11 +48,11 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
         }
 
-        public async Task<SetSettlementResponse> SetSettlementAsync(SetSettlementRequest request)
+        public async Task<SettlementResponse> SetSettlementAsync(SettlementRequest request)
         {
             try
             {
-                await _portfolioManager.SetManualSettelmentAsync(new ManualSettlement
+                await _portfolioManager.SetManualSettelmentAsync(new PortfolioSettlement
                 {
                     BrokerId = request.BrokerId,
                     User = request.User,
@@ -65,7 +65,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     WalletFrom = request.WalletFrom,
 
                 });
-                return new SetSettlementResponse()
+                return new SettlementResponse()
                 {
                     Success = true,
                     ErrorMessage = string.Empty
@@ -74,7 +74,43 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
             catch (Exception e)
             {
-                return new SetSettlementResponse()
+                return new SettlementResponse()
+                {
+                    Success = false,
+                    ErrorMessage = $"Can't set new settelment by user {request.User}"
+                };
+            }
+        }
+
+        public async Task<TradeResponse> SetTradeAsync(TradeRequest request)
+        {
+            try
+            {
+                await _portfolioManager.SetManualTradeAsync(new PortfolioManualTrade
+                {
+                    BrokerId = request.BrokerId,
+                    User = request.User,
+                    AssociateSymbol = request.AssociateSymbol,
+                    Comment = request.Comment,
+                    QuoteAsset = request.QuoteAsset,
+                    QuoteVolume = request.QuoteVolume,
+                    BaseAsset = request.BaseAsset,
+                    BaseVolume = request.BaseVolume,
+                    FeeAsset = request.FeeAsset,
+                    FeeVolume = request.FeeVolume,
+                    Price = request.Price,
+                    WalletName = request.WalletName
+                });
+                return new TradeResponse()
+                {
+                    Success = true,
+                    ErrorMessage = string.Empty
+                };
+
+            }
+            catch (Exception e)
+            {
+                return new TradeResponse()
                 {
                     Success = false,
                     ErrorMessage = $"Can't set new settelment by user {request.User}"
@@ -161,7 +197,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
 
         }
 
-        public async Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request)
+        public async Task<BalanceResponse> SetBalanceAsync(BalanceRequest request)
         {
             try
             {
@@ -169,11 +205,11 @@ namespace Service.Liquidity.TradingPortfolio.Services
                   request.Asset,
                   request.Balance);
 
-                return new SetBalanceResponse() { ErrorMessage = string.Empty, Success = true };
+                return new BalanceResponse() { ErrorMessage = string.Empty, Success = true };
             }
             catch (Exception e)
             {
-                return new SetBalanceResponse() { ErrorMessage = e.Message, Success = false };
+                return new BalanceResponse() { ErrorMessage = e.Message, Success = false };
             }
         }
 

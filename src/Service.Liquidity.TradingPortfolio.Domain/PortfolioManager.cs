@@ -19,7 +19,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IServiceBusPublisher<Portfolio> _serviceBusPortfolioPublisher;
         private readonly IServiceBusPublisher<PortfolioFeeShare> _serviceBusFeeSharePublisher;
         private readonly IServiceBusPublisher<PortfolioTrade> _serviceBusTradePublisher;
-        private readonly IServiceBusPublisher<ManualSettlement> _serviceBusManualSettementBusPublisher;
+        private readonly IServiceBusPublisher<PortfolioSettlement> _serviceBusSettementPublisher;
+        private readonly IServiceBusPublisher<PortfolioManualTrade> _serviceBusManualTradePublisher;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
 
@@ -33,14 +34,16 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IIndexPricesClient indexPricesClient,
             IServiceBusPublisher<PortfolioFeeShare> serviceBusFeeSharePublisher, 
             IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher, 
-            IServiceBusPublisher<ManualSettlement> serviceBusManualSettementBusPublisher)
+            IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher, 
+            IServiceBusPublisher<PortfolioManualTrade> serviceBusManualTradePublisher)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
             _indexPricesClient = indexPricesClient;
             _serviceBusFeeSharePublisher = serviceBusFeeSharePublisher;
             _serviceBusTradePublisher = serviceBusTradePublisher;
-            _serviceBusManualSettementBusPublisher = serviceBusManualSettementBusPublisher;
+            _serviceBusSettementPublisher = serviceBusSettementPublisher;
+            _serviceBusManualTradePublisher = serviceBusManualTradePublisher;
         }
 
         public Portfolio GetCurrentPortfolio()
@@ -184,7 +187,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
                 var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
-                walletBalance1.Balance -= Convert.ToDecimal(volume1);
+                walletBalance1.Balance += Convert.ToDecimal(volume1);
             }
 
             var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
@@ -199,16 +202,53 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             if (baseExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
-                walletBalance1.Balance -= Convert.ToDecimal(volume1);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(baseExPortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume1);
             }
 
             var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId2);
             if (quoteExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(quotePortfolioWallet);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(quoteExPortfolioWallet);
                 walletBalance1.Balance += Convert.ToDecimal(volume2);
+            }
+        }
+
+        private void ApplyTradeItem(string walletId, string assetId1, decimal volume1,
+            string assetId2, decimal volume2,
+            string feeAssetId, decimal feeVolume)
+        {
+            var internalPortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
+            if (internalPortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(internalPortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume1);
+
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(internalPortfolioWallet);
+                walletBalance2.Balance += Convert.ToDecimal(volume2);
+
+                var feeAsset = _portfolio.GetOrCreateAssetBySymbol(feeAssetId);
+                var feeWalletBalance = feeAsset.GetOrCreateWalletBalance(internalPortfolioWallet);
+                feeWalletBalance.Balance += Convert.ToDecimal(feeVolume);
+            }
+
+            var externalPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId);
+            if (externalPortfolioWallet != null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
+                var walletBalance1 = asset1.GetOrCreateWalletBalance(externalPortfolioWallet);
+                walletBalance1.Balance += Convert.ToDecimal(volume1);
+
+                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
+                var walletBalance2 = asset2.GetOrCreateWalletBalance(externalPortfolioWallet);
+                walletBalance2.Balance += Convert.ToDecimal(volume2);
+
+                var feeAsset = _portfolio.GetOrCreateAssetBySymbol(feeAssetId);
+                var feeWalletBalance = feeAsset.GetOrCreateWalletBalance(externalPortfolioWallet);
+                feeWalletBalance.Balance += Convert.ToDecimal(feeVolume);
             }
         }
 
@@ -375,23 +415,44 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
-        public async Task SetManualSettelmentAsync(ManualSettlement message)
+        public async Task SetManualSettelmentAsync(PortfolioSettlement settelment)
         {
             ApplySettelmentItem(
-                message.Asset,
-                message.WalletFrom,
-                message.VolumeFrom,
-                message.WalletTo,
-                message.VolumeTo
+                settelment.Asset,
+                settelment.WalletFrom,
+                settelment.VolumeFrom,
+                settelment.WalletTo,
+                settelment.VolumeTo
             );
 
-            await PublishPortfolioSettelmentAsync(message);
+            await PublishPortfolioSettelmentAsync(settelment);
             await PublishPortfolioAsync();
         }
 
-        private async Task PublishPortfolioSettelmentAsync(ManualSettlement message)
+        public async Task SetManualTradeAsync(PortfolioManualTrade trade)
         {
-            await _serviceBusManualSettementBusPublisher.PublishAsync(message);
+            ApplyTradeItem(
+                trade.WalletName,
+                trade.BaseAsset,
+                trade.BaseVolume,
+                trade.QuoteAsset,
+                trade.QuoteVolume,
+                trade.FeeAsset,
+                trade.FeeVolume
+            );
+
+            await PublishPortfolioTradeAsync(trade);
+            await PublishPortfolioAsync();
+        }
+
+        private async Task PublishPortfolioTradeAsync(PortfolioManualTrade trade)
+        {
+            await _serviceBusManualTradePublisher.PublishAsync(trade);
+        }
+
+        private async Task PublishPortfolioSettelmentAsync(PortfolioSettlement settelment)
+        {
+            await _serviceBusSettementPublisher.PublishAsync(settelment);
         }
     }
 }

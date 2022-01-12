@@ -12,10 +12,14 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request);
         
         [OperationContract]
-        Task<SetBalanceResponse> SetBalanceAsync(SetBalanceRequest request);
+        Task<BalanceResponse> SetBalanceAsync(BalanceRequest request);
 
         [OperationContract]
-        Task <SetSettlementResponse> SetSettlementAsync(SetSettlementRequest request);
+        Task <SettlementResponse> SetSettlementAsync(SettlementRequest request);
+
+        [OperationContract]
+        Task<TradeResponse> SetTradeAsync(TradeRequest request);
+
         #endregion
 
         #region Wallets CRUD

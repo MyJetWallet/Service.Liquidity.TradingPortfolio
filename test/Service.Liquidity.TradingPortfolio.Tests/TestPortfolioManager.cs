@@ -155,16 +155,33 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
     }
 
-    public class PortfolioManualSettlementPublisherMock : IServiceBusPublisher<ManualSettlement>
+    public class PortfolioManualSettlementPublisherMock : IServiceBusPublisher<PortfolioSettlement>
     {
-        public Action<ManualSettlement> Callback { get; set; }
+        public Action<PortfolioSettlement> Callback { get; set; }
 
-        public async Task PublishAsync(ManualSettlement message)
+        public async Task PublishAsync(PortfolioSettlement message)
         {
             Callback?.Invoke(message);
         }
 
-        public async Task PublishAsync(IEnumerable<ManualSettlement> messageList)
+        public async Task PublishAsync(IEnumerable<PortfolioSettlement> messageList)
+        {
+            foreach (var message in messageList)
+            {
+                Callback?.Invoke(message);
+            }
+        }
+    }
+
+    public class PortfolioManualTradePublisherMock : IServiceBusPublisher<PortfolioManualTrade>
+    {
+        public Action<PortfolioManualTrade> Callback { get; set; }
+        public async Task PublishAsync(PortfolioManualTrade message)
+        {
+            Callback?.Invoke(message);
+        }
+
+        public async Task PublishAsync(IEnumerable<PortfolioManualTrade> messageList)
         {
             foreach (var message in messageList)
             {
@@ -228,6 +245,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
         public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
         private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
+        private PortfolioManualTradePublisherMock _portfolioManualTradeMock = new PortfolioManualTradePublisherMock();
 
         [SetUp]
         public void Setup()
@@ -237,7 +255,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 _indexPricesMock,
                 _portfolioFeeSharePublisherMock,
                 _portfolioTraderPublisherMock,
-                _portfolioManualSettelmentMock);
+                _portfolioManualSettelmentMock,
+                _portfolioManualTradeMock);
         }
 
         [Test]
@@ -460,4 +479,5 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-1250m);
         }
     }
+
 }

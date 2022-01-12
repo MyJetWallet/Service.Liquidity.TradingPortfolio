@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
     [DataContract]
-    public class SetSettlementRequest
+    public class SettlementRequest
     {
         [DataMember(Order = 1)] public string BrokerId { get; set; }
         [DataMember(Order = 2)] public string WalletFrom { get; set; }

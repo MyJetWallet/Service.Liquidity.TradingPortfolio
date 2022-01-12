@@ -16,6 +16,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         Portfolio GetCurrentPortfolio();
         Task SetManualBalanceAsync(string wallet, string asset, decimal balance);
         Task SetManualVelocityAsync(string asset, decimal value);
-        Task SetManualSettelmentAsync(ManualSettlement manualSettlement);
+        Task SetManualSettelmentAsync(PortfolioSettlement settelment);
+        Task SetManualTradeAsync(PortfolioManualTrade trade);
     }
 }

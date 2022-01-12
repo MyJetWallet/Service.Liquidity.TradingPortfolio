@@ -3,7 +3,7 @@
 namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
     [DataContract]
-    public class SetBalanceRequest
+    public class BalanceRequest
     {
         [DataMember(Order = 1)] public string Wallet { get; set; }
         [DataMember(Order = 2)] public string Asset { get; set; }
