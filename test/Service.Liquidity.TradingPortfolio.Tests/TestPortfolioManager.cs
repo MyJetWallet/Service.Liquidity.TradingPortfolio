@@ -177,7 +177,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 
     public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSql>
     {
-        private Portfolio _portfolio = new();
+        private Portfolio _portfolio = new()
+        {
+            Assets = new Dictionary<string, Portfolio.Asset>()
+        };
+
         public async ValueTask InsertAsync(PortfolioNoSql entity)
         {
             _portfolio = entity.Portfolio;
@@ -223,6 +227,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 
         public async ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
         {
+            _portfolio = new()
+            {
+                Assets = new Dictionary<string, Portfolio.Asset>()
+            };
+
             return new List<PortfolioNoSql>() { PortfolioNoSql.Create(_portfolio) };
         }
 
@@ -350,6 +359,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 _portfolioTraderPublisherMock,
                 _portfolioManualSettelmentMock,
                 _myNoSqlPortfolioWriter);
+            _service.Load();
         }
 
         [Test]
@@ -379,7 +389,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 DifferenceVolumeAbs = 50m,
             };
 
-        await _service.ApplySwapsAsync(new[] { swaps });
+            await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(1m);

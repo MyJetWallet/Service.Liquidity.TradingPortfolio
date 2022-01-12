@@ -60,6 +60,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 return;
             }
             _portfolio = data.Portfolio;
+            RecalculatePortfolio();
         }
 
         public Portfolio GetCurrentPortfolio()
