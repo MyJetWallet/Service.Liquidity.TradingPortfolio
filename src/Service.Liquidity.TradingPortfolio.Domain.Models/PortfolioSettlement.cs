@@ -6,7 +6,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     [DataContract]
     public class PortfolioSettlement
     {
-        public const string TopicName = "jetwallet-liquidity-trading-portfolio-settlement";
+        public const string TopicName = "jetwallet-liquidity-tradingportfolio-settlement";
 
         [DataMember(Order = 1)] public long Id { get; set; }
         [DataMember(Order = 2)] public string BrokerId { get; set; }
@@ -18,5 +18,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 8)] public string Comment { get; set; }
         [DataMember(Order = 9)] public string User { get; set; }
         [DataMember(Order = 10)] public DateTime SettlementDate { get; set; }
+        [DataMember(Order = 11)] public Decimal ReleasedPnl { get; set; }
     }
 }

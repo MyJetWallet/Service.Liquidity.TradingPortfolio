@@ -26,7 +26,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
 
-        private Portfolio _portfolio;
+        private Portfolio _portfolio = new Portfolio()
+        {
+            Assets = new Dictionary<string, Portfolio.Asset>()
+        };
 
         public PortfolioManager(IPortfolioWalletManager portfolioWalletManager,
             IServiceBusPublisher<Portfolio> serviceBusPublisher,
@@ -53,10 +56,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             using var locker = _myLocker.GetLocker().GetAwaiter().GetResult();
             if (data == null)
             {
-                _portfolio = new Portfolio()
-                {
-                    Assets = new Dictionary<string, Portfolio.Asset>()
-                };
                 return;
             }
             _portfolio = data.Portfolio;
