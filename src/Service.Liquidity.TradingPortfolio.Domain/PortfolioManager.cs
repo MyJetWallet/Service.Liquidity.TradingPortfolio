@@ -362,10 +362,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 WalletFrom = message.ConverterWalletId,
                 WalletTo = message.FeeShareWalletId,
                 Asset = message.FeeShareAsset,
-                Volume = message.FeeShareAmountInTargetAsset,
+                VolumeFrom = message.FeeShareAmountInTargetAsset,
+                VolumeTo = message.FeeShareAmountInTargetAsset,
                 Comment = $"FeeShareSettlement:{message.OperationId}",
                 ReferrerClientId = message.ReferrerClientId,
                 SettlementDate = DateTime.UtcNow,
+                ReleasedPnl = 0m //TODO: Calc Pnl
             };
 
             await PublishPortfolioFeeShareAsync(portfolioFeeShare);
