@@ -175,6 +175,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         }
     }
 
+
+    public class PortfolioChangeBalancePublisherMock: IServiceBusPublisher<PortfolioChangeBalance>
+    {
+        public Action<PortfolioChangeBalance> Callback { get; set; }
+        public async Task PublishAsync(PortfolioChangeBalance message)
+        {
+            Callback?.Invoke(message);
+        }
+
+        public async Task PublishAsync(IEnumerable<PortfolioChangeBalance> messageList)
+        {
+            foreach (var message in messageList)
+            {
+                Callback?.Invoke(message);
+            }
+        }
+    }
+
     public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSql>
     {
         private Portfolio _portfolio = new()
@@ -348,6 +366,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
         private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
         private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
+        public PortfolioChangeBalancePublisherMock _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
 
         [SetUp]
         public void Setup()
@@ -358,7 +377,9 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 _portfolioFeeSharePublisherMock,
                 _portfolioTraderPublisherMock,
                 _portfolioManualSettelmentMock,
-                _myNoSqlPortfolioWriter);
+                _myNoSqlPortfolioWriter,
+                _portfolioChangeBalancePublisherMock
+                );
             _service.Load();
         }
 
@@ -582,4 +603,5 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-1250m);
         }
     }
+
 }

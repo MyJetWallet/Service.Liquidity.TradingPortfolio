@@ -22,6 +22,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IServiceBusPublisher<PortfolioFeeShare> _serviceBusFeeSharePublisher;
         private readonly IServiceBusPublisher<PortfolioTrade> _serviceBusTradePublisher;
         private readonly IServiceBusPublisher<PortfolioSettlement> _serviceBusSettementPublisher;
+        private readonly IServiceBusPublisher<PortfolioChangeBalance> _serviceBusChangeBalancePublisher;
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
@@ -31,13 +32,16 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             Assets = new Dictionary<string, Portfolio.Asset>()
         };
 
+
+
         public PortfolioManager(IPortfolioWalletManager portfolioWalletManager,
             IServiceBusPublisher<Portfolio> serviceBusPublisher,
             IIndexPricesClient indexPricesClient,
             IServiceBusPublisher<PortfolioFeeShare> serviceBusFeeSharePublisher, 
             IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher, 
             IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher, 
-            IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter)
+            IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter, 
+            IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
@@ -46,6 +50,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _serviceBusTradePublisher = serviceBusTradePublisher;
             _serviceBusSettementPublisher = serviceBusSettementPublisher;
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
+            _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
         }
 
         public void Load()
@@ -374,7 +379,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
-        public async Task SetManualBalanceAsync(string wallet, string asset, decimal balance)
+        public async Task SetManualBalanceAsync(string wallet, string asset, decimal balance, 
+            string comment, string user)
         {
             using var locker = await _myLocker.GetLocker();
 
@@ -385,9 +391,28 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 throw new Exception($"Can't find portfolio wallet: {wallet}");
             }
             var walletBalance = portfolioAsset.GetOrCreateWalletBalance(portfolioWallet);
+            var oldBalance = walletBalance.Balance;
             walletBalance.Balance = balance;
 
+            var portfolioChangeBalance = new PortfolioChangeBalance
+            {
+                BrokerId = portfolioWallet.BrokerId,
+                WalletName = wallet,
+                Asset = asset,
+                Balance = walletBalance.Balance,
+                UpdateDate = DateTime.UtcNow,
+                Comment = comment,
+                User = user,
+                BalanceBeforeUpdate = oldBalance
+            };
+
+            await PublishPortfolioChangeBalanceAsync(portfolioChangeBalance);
             await PublishPortfolioAsync();
+        }
+
+        private async Task PublishPortfolioChangeBalanceAsync(PortfolioChangeBalance portfolioChangeBalance)
+        {
+            await _serviceBusChangeBalancePublisher.PublishAsync(portfolioChangeBalance);
         }
 
         public async Task SetManualVelocityAsync(string asset, decimal velocity)

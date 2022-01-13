@@ -167,7 +167,9 @@ namespace Service.Liquidity.TradingPortfolio.Services
             {
                 await _portfolioManager.SetManualBalanceAsync(request.Wallet,
                   request.Asset,
-                  request.Balance);
+                  request.Balance,
+                  request.Comment,
+                  request.User);
 
                 return new BalanceResponse() { ErrorMessage = string.Empty, Success = true };
             }
