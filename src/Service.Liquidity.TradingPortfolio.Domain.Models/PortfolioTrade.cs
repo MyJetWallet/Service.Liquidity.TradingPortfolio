@@ -7,7 +7,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     [DataContract]
     public class PortfolioTrade
     {
-        public const string TopicName = "jetwallet-liquidity-trading-portfolio-trades";
+        public const string TopicName = "jetwallet-liquidity-tradingportfolio-trades";
         [DataMember(Order = 1)] public string TradeId { get; set; }  // TradeMessage.Id & SwapMessage.Id
         [DataMember(Order = 2)] public string AssociateBrokerId { get; set; }  // TradeMessage.Id & SwapMessage.BrokerId
         [DataMember(Order = 3)] public string BaseWalletName { get; set; }  // PortfolioWalletId

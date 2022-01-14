@@ -289,7 +289,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     Comment = "Swap",//TODO: ???
                     FeeAsset = message.AssetId1,
                     FeeVolume = Convert.ToDecimal(message.Volume1),
-                    User = "Converter" //TODO: ???
+                    //User = message //TODO: ???
                 };
                 portfolioTrades.Add(portfolioTrade);
             }
