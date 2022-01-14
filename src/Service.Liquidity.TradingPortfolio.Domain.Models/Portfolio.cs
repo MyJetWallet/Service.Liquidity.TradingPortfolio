@@ -40,7 +40,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
 
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
-                if (!WalletBalances.TryGetValue(portfolioWallet.Id, out var walletBalance))
+                if (!WalletBalances.TryGetValue(portfolioWallet.Name, out var walletBalance))
                 {
                     walletBalance = new Portfolio.WalletBalance()
                     {
@@ -48,14 +48,14 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                         BalanceInUsd = 0m,
                         Wallet = portfolioWallet,
                     };
-                    WalletBalances[portfolioWallet.Id] = walletBalance;
+                    WalletBalances[portfolioWallet.Name] = walletBalance;
                 }
                 return walletBalance;
             }
 
-            public WalletBalance GetWalletBalanceByPortfolioWalletId(string portfolioWalletId)
+            public WalletBalance GetWalletBalanceByPortfolioWalletName(string walletName)
             {
-                if (!WalletBalances.TryGetValue(portfolioWalletId, out var walletBalance))
+                if (!WalletBalances.TryGetValue(walletName, out var walletBalance))
                 {
                     return null;
                 }

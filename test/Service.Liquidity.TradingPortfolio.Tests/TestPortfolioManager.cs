@@ -17,70 +17,63 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 {
     public class PortfolioWalletManagerMock : IPortfolioWalletManager
     {
-        public PortfolioWallet GetExternalWalletByWalletId(string walletId)
+        public PortfolioWallet GetExternalWalletByWalletName(string walletName)
         {
-            if (walletId == "SP-Broker")
+            if (walletName == "SP-Broker")
                 return new Domain.Models.PortfolioWallet()
                 {
                     IsInternal = true,
                     ExternalSource = null,
-                    Id = "Converter",
-                    InternalWalletId = "SP-Broker"
+                    Name = "Converter",
+                    WalletId = "SP-Broker"
                 };
 
+            return null;
+        }
+
+        public PortfolioWallet GetExternalWalletByWalletId(string walletId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public PortfolioWallet GetInternalWalletByWalletName(string walletName)
+        {
+            if (walletName == "SP-Broker")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Name = "Converter",
+                    WalletId = "SP-Broker"
+                };
+
+            if (walletName == "SP-Broker-1")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Name = "Converter-1",
+                    WalletId = "SP-Broker-1"
+                };
             return null;
         }
 
         public PortfolioWallet GetInternalWalletByWalletId(string walletId)
         {
-            if (walletId == "SP-Broker")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Id = "Converter",
-                    InternalWalletId = "SP-Broker"
-                };
-
-            if (walletId == "SP-Broker-1")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Id = "Converter-1",
-                    InternalWalletId = "SP-Broker-1"
-                };
-
-            //if (walletId == "SP-User 1")
-            //    return new Domain.Models.PortfolioWallet()
-            //    {
-            //        IsInternal = true,
-            //        ExternalSource = null,
-            //        Id = "User",
-            //        InternalWalletId = "SP-User 1"
-            //    };
-            //if (walletId == "SP-User 2")
-            //    return new Domain.Models.PortfolioWallet()
-            //    {
-            //        IsInternal = true,
-            //        ExternalSource = null,
-            //        Id = "User",
-            //        InternalWalletId = "SP-User 2"
-            //    };
-            return null;
+            throw new NotImplementedException();
         }
 
-        public PortfolioWallet GetWalleteByWalletId(string walletId)
+        public PortfolioWallet GetWalletByWalletId(string walletId)
         {
             throw new NotImplementedException();
         }
 
-        public Task DeleteInternalWallet(string walletId)
+        public Task DeleteInternalWalletByWalletName(string walletName)
         {
             throw new NotImplementedException();
         }
 
-        public Task DeleteExternalWallet(string walletId)
+        public Task DeleteExternalWalletByWalletName(string walletName)
         {
             throw new NotImplementedException();
         }
@@ -442,8 +435,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             await _service.ApplySwapsAsync(new[] { swaps });
             var portfolio = _service.GetCurrentPortfolio();
 
-            portfolio.GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
-            portfolio.GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
+            portfolio.GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletName("Converter").Should().BeNull();
+            portfolio.GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletName("Converter").Should().BeNull();
         }
 
         [Test]
@@ -552,17 +545,17 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
             });
 
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").Balance.Should().Be(1m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(41000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter").Should().BeNull();
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").Balance.Should().Be(-40000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter").BalanceInUsd.Should().Be(-40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletName("Converter").Balance.Should().Be(1m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletName("Converter").BalanceInUsd.Should().Be(41000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletName("Converter").Should().BeNull();
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletName("Converter").Balance.Should().Be(-40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletName("Converter").BalanceInUsd.Should().Be(-40000m);
 
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletId("Converter-1").Should().BeNull();
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter-1").Balance.Should().Be(-10m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(-42000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter-1").Balance.Should().Be(40000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletId("Converter-1").BalanceInUsd.Should().Be(40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").GetWalletBalanceByPortfolioWalletName("Converter-1").Should().BeNull();
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletName("Converter-1").Balance.Should().Be(-10m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").GetWalletBalanceByPortfolioWalletName("Converter-1").BalanceInUsd.Should().Be(-42000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletName("Converter-1").Balance.Should().Be(40000m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").GetWalletBalanceByPortfolioWalletName("Converter-1").BalanceInUsd.Should().Be(40000m);
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalance.Should().Be(1m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalanceInUsd.Should().Be(41000m);

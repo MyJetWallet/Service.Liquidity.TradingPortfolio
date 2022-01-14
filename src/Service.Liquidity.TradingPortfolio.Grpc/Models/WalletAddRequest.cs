@@ -8,7 +8,6 @@ namespace Service.Liquidity.TradingPortfolio.Grpc.Models
         [DataMember(Order = 1)] public string WalletName { get; set; }
         [DataMember(Order = 2)] public string WalletId { get; set; }
         [DataMember(Order = 3)] public string BrokerId { get; set; }
-        [DataMember(Order = 4)] public string ClientId { get; set; }
-        [DataMember(Order = 5)] public string Source { get; set; }
+        [DataMember(Order = 4)] public string Source { get; set; }
     }
 }

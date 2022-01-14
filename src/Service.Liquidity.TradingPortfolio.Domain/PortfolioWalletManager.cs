@@ -21,7 +21,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         public void Load()
         {
             var data = _myNoSqlWalletWriter.GetAsync().GetAwaiter().GetResult();
-            _wallets = data.Select(e => e.Wallet).ToDictionary(e => e.Id);
+            _wallets = data.Select(e => e.Wallet).ToDictionary(e => e.Name);
         }
 
         public async Task AddExternalWallet(string walletName, string brokerId, string sourceName)
@@ -30,9 +30,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             {
                 IsInternal = false,
                 ExternalSource = sourceName,
-                Id = walletName,
+                Name = walletName,
+                WalletId = walletName
             };
-            _wallets[portfolioWallet.Id] = portfolioWallet;
+            _wallets[portfolioWallet.Name] = portfolioWallet;
             await _myNoSqlWalletWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
         }
 
@@ -42,47 +43,67 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             {
                 IsInternal = true,
                 ExternalSource = null,
-                Id = walletName,
-                InternalWalletId = walletId,
+                Name = walletName,
+                WalletId = walletId,
                 BrokerId = brokerId
             };
-            _wallets[portfolioWallet.Id] = portfolioWallet;
+            _wallets[portfolioWallet.Name] = portfolioWallet;
             await _myNoSqlWalletWriter.InsertOrReplaceAsync(PortfolioWalletNoSql.Create(portfolioWallet));
+        }
+
+        public PortfolioWallet GetExternalWalletByWalletName(string walletName)
+        {
+            if (!_wallets.TryGetValue(walletName, out var wallet))
+            {
+                return null;
+            }
+            return !wallet.IsInternal ? wallet : null;
         }
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
         {
-            if (!_wallets.TryGetValue(walletId, out var wallet))
+            var wallet = GetWalletByWalletId(walletId);
+            if (wallet == null)
+            {
+                return null;
+            }
+            return !wallet.IsInternal ? wallet : null;
+
+        }
+
+        public PortfolioWallet GetInternalWalletByWalletName(string walletName)
+        {
+            if (!_wallets.TryGetValue(walletName, out var wallet))
             {
                 return null;
             }
 
-            return wallet.IsInternal == false ? wallet : null;
+            return wallet.IsInternal ? wallet : null;
         }
 
         public PortfolioWallet GetInternalWalletByWalletId(string walletId)
         {
-            if(!_wallets.TryGetValue(walletId, out var wallet))
-            {
-                return null;    
-            }
-            
-            return wallet.IsInternal ==  true ? wallet : null;
-        }
-
-        public PortfolioWallet GetWalleteByWalletId(string walletId)
-        {
-            if (!_wallets.TryGetValue(walletId, out var wallet))
+            var wallet = GetWalletByWalletId(walletId);
+            if (wallet == null)
             {
                 return null;
             }
-
-            return wallet;
+            return wallet.IsInternal ? wallet : null;
         }
 
-        public async Task DeleteInternalWallet(string walletId)
+        public PortfolioWallet GetWalletByWalletId(string walletId)
         {
-            if (!_wallets.TryGetValue(walletId, out var wallet))
+            foreach (var wallet in _wallets.Values)
+            {
+                if (wallet.WalletId == walletId)
+                    return wallet;
+            }
+            return null;
+        }
+
+        public async Task DeleteInternalWalletByWalletName(string walletName)
+        {
+            if (!_wallets.TryGetValue(walletName, out var wallet))
             {
                 return;
             }
@@ -90,15 +111,15 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             if (wallet.IsInternal)
             {
                 await _myNoSqlWalletWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(), 
-                    PortfolioWalletNoSql.GenerateRowKey(walletId));
+                    PortfolioWalletNoSql.GenerateRowKey(walletName));
                 
-                var isRemoved = _wallets.Remove(walletId);
+                var isRemoved = _wallets.Remove(walletName);
             }
         }
 
-        public async Task DeleteExternalWallet(string walletId)
+        public async Task DeleteExternalWalletByWalletName(string walletName)
         {
-            if (!_wallets.TryGetValue(walletId, out var wallet))
+            if (!_wallets.TryGetValue(walletName, out var wallet))
             {
                 return;
             }
@@ -106,9 +127,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             if (wallet.IsInternal == false)
             {
                 await _myNoSqlWalletWriter.DeleteAsync(PortfolioWalletNoSql.GeneratePartitionKey(),
-                    PortfolioWalletNoSql.GenerateRowKey(walletId));
+                    PortfolioWalletNoSql.GenerateRowKey(walletName));
 
-                var isRemoved = _wallets.Remove(walletId);
+                var isRemoved = _wallets.Remove(walletName);
             }
         }
 

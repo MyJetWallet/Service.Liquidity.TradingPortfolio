@@ -128,7 +128,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private void ApplySwapItem(string walletId1, string assetId1, decimal volume1,
             string walletId2, string assetId2, decimal volume2)
         {
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId1);
             if (basePortfolioWallet != null)
             {
                 // asset 1
@@ -142,7 +142,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 walletBalance2.Balance += Convert.ToDecimal(volume2);
             }
 
-            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId2);
             if (quotePortfolioWallet != null)
             {
                 // asset 1
@@ -159,7 +159,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
         private void ApplyFeeItem(string walletId, string assetId, decimal volume)
         {
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId);
             if (basePortfolioWallet != null)
             {
                 // asset 1
@@ -172,7 +172,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private void ApplySettelmentItem(string assetId, string walletId1, decimal volume1,
             string walletId2, decimal volume2)
         {
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId1);
             if (basePortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -180,7 +180,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 walletBalance1.Balance += Convert.ToDecimal(volume1);
             }
 
-            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId2);
             if (quotePortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -188,7 +188,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 walletBalance1.Balance += Convert.ToDecimal(volume2);
             }
 
-            var baseExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId1);
+            var baseExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId1);
             if (baseExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -196,7 +196,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 walletBalance1.Balance += Convert.ToDecimal(volume1);
             }
 
-            var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId2);
+            var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId2);
             if (quoteExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -209,7 +209,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             string assetId2, decimal volume2,
             string feeAssetId, decimal feeVolume)
         {
-            var internalPortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
+            var internalPortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId);
             if (internalPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
@@ -225,7 +225,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 feeWalletBalance.Balance += Convert.ToDecimal(feeVolume);
             }
 
-            var externalPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletId(walletId);
+            var externalPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId);
             if (externalPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
@@ -285,7 +285,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
                     QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
                     DateTime = DateTime.UtcNow,
-                    Source = baseWallet?.InternalWalletId ?? quoteWallet?.InternalWalletId ?? string.Empty, //TODO: ???
+                    Source = baseWallet?.Name ?? quoteWallet?.Name ?? string.Empty, //TODO: ???
                     Comment = "Swap",//TODO: ???
                     FeeAsset = message.AssetId1,
                     FeeVolume = Convert.ToDecimal(message.Volume1),
@@ -319,8 +319,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 var (asset2IndexPrice, volume2InUsd) =
                     _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset, Convert.ToDecimal(message.OppositeVolume));
 
-                var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.AssociateWalletId);
-                var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.AssociateBrokerId);
+                var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletName(message.AssociateWalletId);
+                var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletName(message.AssociateBrokerId);
 
                 var portfolioTrade = new PortfolioTrade()
                 {
@@ -372,7 +372,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 Comment = $"FeeShareSettlement:{message.OperationId}",
                 ReferrerClientId = message.ReferrerClientId,
                 SettlementDate = DateTime.UtcNow,
-                ReleasedPnl = 0m //TODO: Calc Pnl
             };
 
             await PublishPortfolioFeeShareAsync(portfolioFeeShare);
@@ -385,7 +384,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             using var locker = await _myLocker.GetLocker();
 
             var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
-            var portfolioWallet = _portfolioWalletManager.GetWalleteByWalletId(wallet);
+            var portfolioWallet = _portfolioWalletManager.GetWalletByWalletId(wallet);
             if (portfolioWallet == null)
             {
                 throw new Exception($"Can't find portfolio wallet: {wallet}");

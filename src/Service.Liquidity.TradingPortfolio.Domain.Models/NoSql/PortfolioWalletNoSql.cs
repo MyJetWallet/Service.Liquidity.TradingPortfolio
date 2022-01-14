@@ -4,7 +4,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models.NoSql
 {
     public class PortfolioWalletNoSql : MyNoSqlDbEntity
     {
-        public const string TableName = "myjetwallet-liquitity-tradingportfolio";
+        public const string TableName = "myjetwallet-liquitity-tradingportfolio-wallets";
         public static string GeneratePartitionKey() => "PortfolioWallet";
         public static string GenerateRowKey(string walletRowId) =>
             $"{walletRowId}";
@@ -15,7 +15,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models.NoSql
             new PortfolioWalletNoSql()
             {
                 PartitionKey = GeneratePartitionKey(),
-                RowKey = GenerateRowKey(wallet.Id),
+                RowKey = GenerateRowKey(wallet.Name),
                 Wallet = wallet,
             };
     }

@@ -106,7 +106,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioWalletManager.DeleteExternalWallet(request.WalletId);
+                await _portfolioWalletManager.DeleteExternalWalletByWalletName(request.WalletId);
                 return new WalletResponse()
                 {
                     ErrorMessage = string.Empty,
@@ -127,7 +127,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioWalletManager.DeleteInternalWallet(request.WalletId);
+                await _portfolioWalletManager.DeleteInternalWalletByWalletName(request.WalletId);
                 return new WalletResponse()
                 {
                     ErrorMessage = string.Empty,

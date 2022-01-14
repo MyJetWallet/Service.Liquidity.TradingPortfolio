@@ -18,7 +18,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 8)] public string Comment { get; set; }  // Формируем сами
         [DataMember(Order = 9)] public string ReferrerClientId { get; set; } // ReferrerClientId
         [DataMember(Order = 10)] public DateTime SettlementDate { get; set; } // DateTime.Now
-        [DataMember(Order = 11)] public decimal ReleasedPnl { get; set; }
         [DataMember(Order = 100)] public long Id { get; set; }
     }
 }

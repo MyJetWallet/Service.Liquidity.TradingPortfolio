@@ -8,8 +8,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     public class PortfolioTrade
     {
         public const string TopicName = "jetwallet-liquidity-tradingportfolio-trades";
-        [DataMember(Order = 1)] public string TradeId { get; set; }  // TradeMessage.Id & SwapMessage.Id
-        [DataMember(Order = 2)] public string AssociateBrokerId { get; set; }  // TradeMessage.Id & SwapMessage.BrokerId
+        [DataMember(Order = 1)] public string TradeId { get; set; }  // TradeMessage.Name & SwapMessage.Name
+        [DataMember(Order = 2)] public string AssociateBrokerId { get; set; }  // TradeMessage.Name & SwapMessage.BrokerId
         [DataMember(Order = 3)] public string BaseWalletName { get; set; }  // PortfolioWalletId
         [DataMember(Order = 4)] public string QuoteWalletName { get; set; }  // PortfolioWalletId
         [DataMember(Order = 5)] public string AssociateSymbol { get; set; }  //TradeMessage.AssociateSymbol   SwapMessage.AssetId1|AssetId2 =  swap.AssetId1 + "|" + swap.AssetId2,
