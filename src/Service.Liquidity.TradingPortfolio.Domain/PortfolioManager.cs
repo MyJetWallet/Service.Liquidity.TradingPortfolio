@@ -128,7 +128,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private void ApplySwapItem(string walletId1, string assetId1, decimal volume1,
             string walletId2, string assetId2, decimal volume2)
         {
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId1);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
             if (basePortfolioWallet != null)
             {
                 // asset 1
@@ -142,7 +142,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 walletBalance2.Balance += Convert.ToDecimal(volume2);
             }
 
-            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId2);
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
             if (quotePortfolioWallet != null)
             {
                 // asset 1
@@ -159,7 +159,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
         private void ApplyFeeItem(string walletId, string assetId, decimal volume)
         {
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
             if (basePortfolioWallet != null)
             {
                 // asset 1

@@ -19,7 +19,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
     {
         public PortfolioWallet GetExternalWalletByWalletName(string walletName)
         {
-            if (walletName == "SP-Broker")
+            if (walletName == "Converter")
                 return new Domain.Models.PortfolioWallet()
                 {
                     IsInternal = true,
@@ -33,12 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
         {
-            throw new NotImplementedException();
-        }
-
-        public PortfolioWallet GetInternalWalletByWalletName(string walletName)
-        {
-            if (walletName == "SP-Broker")
+            if (walletId == "SP-Broker")
                 return new Domain.Models.PortfolioWallet()
                 {
                     IsInternal = true,
@@ -47,7 +42,21 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                     WalletId = "SP-Broker"
                 };
 
-            if (walletName == "SP-Broker-1")
+            return null;
+        }
+
+        public PortfolioWallet GetInternalWalletByWalletName(string walletName)
+        {
+            if (walletName == "Converter")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Name = "Converter",
+                    WalletId = "SP-Broker"
+                };
+
+            if (walletName == "Converter-1")
                 return new Domain.Models.PortfolioWallet()
                 {
                     IsInternal = true,
@@ -60,7 +69,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 
         public PortfolioWallet GetInternalWalletByWalletId(string walletId)
         {
-            throw new NotImplementedException();
+            if (walletId == "SP-Broker")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Name = "Converter",
+                    WalletId = "SP-Broker"
+                };
+
+            if (walletId == "SP-Broker-1")
+                return new Domain.Models.PortfolioWallet()
+                {
+                    IsInternal = true,
+                    ExternalSource = null,
+                    Name = "Converter-1",
+                    WalletId = "SP-Broker-1"
+                };
+            return null;
         }
 
         public PortfolioWallet GetWalletByWalletId(string walletId)
