@@ -6,7 +6,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models;
 public class PortfolioManualTrade
 {
 
-    public const string TopicName = "jetwallet-liquidity-trading-portfolio-trade";
+    public const string TopicName = "jetwallet-liquidity-tradingportfolio-manualtrade";
 
     [DataMember(Order = 1)] public string BrokerId { get; set; }
     [DataMember(Order = 2)] public string WalletName { get; set; }
@@ -20,4 +20,5 @@ public class PortfolioManualTrade
     [DataMember(Order = 10)] public decimal FeeVolume { get; set; }
     [DataMember(Order = 11)] public string BaseAsset { get; set; }
     [DataMember(Order = 12)] public string QuoteAsset { get; set; }
+    [DataMember(Order = 100)] public long Id { get; set; }
 }

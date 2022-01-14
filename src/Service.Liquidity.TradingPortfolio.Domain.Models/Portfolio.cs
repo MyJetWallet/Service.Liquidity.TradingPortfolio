@@ -8,7 +8,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
     [DataContract]
     public class Portfolio
     {
-        public const string TopicName = "jetwallet-liquidity-trading-portfolio";
+        public const string TopicName = "jetwallet-liquidity-tradingportfolio-portfolio";
 
         [DataMember(Order = 1)] public Dictionary<string, Asset> Assets { get; set; }
         [DataMember(Order = 2)] public decimal TotalNetInUsd { get; set; }
