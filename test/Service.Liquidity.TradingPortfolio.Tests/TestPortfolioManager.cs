@@ -94,6 +94,11 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             throw new NotImplementedException();
         }
 
+        public PortfolioWallet GetWalletByWalletName(string walletName)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task DeleteInternalWalletByWalletName(string walletName)
         {
             throw new NotImplementedException();

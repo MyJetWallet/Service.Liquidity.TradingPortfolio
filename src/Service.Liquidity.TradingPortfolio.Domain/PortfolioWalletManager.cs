@@ -101,6 +101,16 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return null;
         }
 
+        public PortfolioWallet GetWalletByWalletName(string walletName)
+        {
+            if (!_wallets.TryGetValue(walletName, out var wallet))
+            {
+                return null;
+            }
+
+            return wallet;
+        }
+
         public async Task DeleteInternalWalletByWalletName(string walletName)
         {
             if (!_wallets.TryGetValue(walletName, out var wallet))

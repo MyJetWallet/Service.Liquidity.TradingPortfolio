@@ -384,7 +384,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             using var locker = await _myLocker.GetLocker();
 
             var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
-            var portfolioWallet = _portfolioWalletManager.GetWalletByWalletId(wallet);
+            var portfolioWallet = _portfolioWalletManager.GetWalletByWalletName(wallet);
             if (portfolioWallet == null)
             {
                 throw new Exception($"Can't find portfolio wallet: {wallet}");
