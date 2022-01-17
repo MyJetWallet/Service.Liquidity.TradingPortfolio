@@ -46,7 +46,14 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                     {
                         Balance = 0m,
                         BalanceInUsd = 0m,
-                        Wallet = portfolioWallet,
+                        Wallet = new PortfolioWallet()
+                        {
+                            Name = portfolioWallet.Name,
+                            BrokerId = portfolioWallet.BrokerId,
+                            ExternalSource = portfolioWallet.ExternalSource,
+                            IsInternal = portfolioWallet.IsInternal,
+                            WalletId = portfolioWallet.WalletId
+                        },
                     };
                     WalletBalances[portfolioWallet.Name] = walletBalance;
                 }

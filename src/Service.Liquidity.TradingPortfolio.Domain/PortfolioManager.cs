@@ -71,7 +71,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             using var locker = _myLocker.GetLocker().GetAwaiter().GetResult();
             RecalculatePortfolio();
-            return _portfolio.MakeCopy();
+            var portfolio = _portfolio.MakeCopy();
+            return portfolio;
         }
 
         public async Task SetDailyVelocityAsync(string assetSymbol, decimal velocity)
