@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
+using Service.AssetsDictionary.Client;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
@@ -23,6 +25,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IServiceBusPublisher<PortfolioTrade> _serviceBusTradePublisher;
         private readonly IServiceBusPublisher<PortfolioSettlement> _serviceBusSettementPublisher;
         private readonly IServiceBusPublisher<PortfolioChangeBalance> _serviceBusChangeBalancePublisher;
+        private readonly IIndexAssetDictionaryClient _indexAssetDictionaryClient;
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
@@ -41,7 +44,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher, 
             IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher, 
             IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter, 
-            IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher)
+            IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher,
+            IIndexAssetDictionaryClient indexAssetDictionaryClient)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
@@ -51,6 +55,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _serviceBusSettementPublisher = serviceBusSettementPublisher;
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
             _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
+            _indexAssetDictionaryClient = indexAssetDictionaryClient;
         }
 
         public void Load()
@@ -151,14 +156,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             if (basePortfolioWallet != null)
             {
                 // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(basePortfolioWallet);
-                walletBalance1.Balance -= Convert.ToDecimal(volume1);
+                ApplyChangeBalance(assetId1, basePortfolioWallet, -Convert.ToDecimal(volume1));
 
                 // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
-                var walletBalance2 = asset2.GetOrCreateWalletBalance(basePortfolioWallet);
-                walletBalance2.Balance += Convert.ToDecimal(volume2);
+                ApplyChangeBalance(assetId2, basePortfolioWallet, Convert.ToDecimal(volume2));
+
                 retval = true;
             }
 
@@ -166,18 +168,36 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             if (quotePortfolioWallet != null)
             {
                 // asset 1
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
-                var walletBalance1 = asset1.GetOrCreateWalletBalance(quotePortfolioWallet);
-                walletBalance1.Balance += Convert.ToDecimal(volume1);
+                ApplyChangeBalance(assetId1, quotePortfolioWallet, Convert.ToDecimal(volume1));
 
                 // asset 2
-                var asset2 = _portfolio.GetOrCreateAssetBySymbol(assetId2);
-                var walletBalance2 = asset2.GetOrCreateWalletBalance(quotePortfolioWallet);
-                walletBalance2.Balance -= Convert.ToDecimal(volume2);
+                ApplyChangeBalance(assetId2, quotePortfolioWallet, - Convert.ToDecimal(volume2));
                 retval = true;
             }
 
             return retval;
+        }
+
+        private void ApplyChangeBalance(string asset, PortfolioWallet portfolioWallet, decimal volume)
+        {
+            var index = _indexAssetDictionaryClient.GetIndexAsset(DomainConstants.DefaultBroker, asset);
+            if (index == null)
+            {
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(asset);
+                var walletBalance = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance.Balance += Convert.ToDecimal(volume);
+                return;
+            }
+
+            foreach (var item in index.Basket)
+            {
+                var basketAsset = item.Symbol;
+                var basketVolume = item.Volume * volume;
+                
+                var asset1 = _portfolio.GetOrCreateAssetBySymbol(basketAsset);
+                var walletBalance = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                walletBalance.Balance += Convert.ToDecimal(basketVolume);
+            }
         }
 
         private bool ApplyFeeItem(string walletId, string assetId, decimal volume)

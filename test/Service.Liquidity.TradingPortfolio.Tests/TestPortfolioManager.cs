@@ -1,409 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MyJetWallet.Sdk.ServiceBus;
-using MyNoSqlServer.Abstractions;
 using NUnit.Framework;
-using Service.IndexPrices.Client;
-using Service.IndexPrices.Domain.Models;
+using Service.AssetsDictionary.Domain.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
-using Service.Liquidity.TradingPortfolio.Domain.Models;
-using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 
 namespace Service.Liquidity.TradingPortfolio.Tests
 {
-    public class PortfolioWalletManagerMock : IPortfolioWalletManager
-    {
-        public PortfolioWallet GetExternalWalletByWalletName(string walletName)
-        {
-            if (walletName == "Converter")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter",
-                    WalletId = "SP-Broker"
-                };
-
-            return null;
-        }
-
-        public PortfolioWallet GetExternalWalletByWalletId(string walletId)
-        {
-            if (walletId == "SP-Broker")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter",
-                    WalletId = "SP-Broker"
-                };
-
-            return null;
-        }
-
-        public PortfolioWallet GetInternalWalletByWalletName(string walletName)
-        {
-            if (walletName == "Converter")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter",
-                    WalletId = "SP-Broker"
-                };
-
-            if (walletName == "Converter-1")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter-1",
-                    WalletId = "SP-Broker-1"
-                };
-            return null;
-        }
-
-        public PortfolioWallet GetInternalWalletByWalletId(string walletId)
-        {
-            if (walletId == "SP-Broker")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter",
-                    WalletId = "SP-Broker"
-                };
-
-            if (walletId == "SP-Broker-1")
-                return new Domain.Models.PortfolioWallet()
-                {
-                    IsInternal = true,
-                    ExternalSource = null,
-                    Name = "Converter-1",
-                    WalletId = "SP-Broker-1"
-                };
-            return null;
-        }
-
-        public PortfolioWallet GetWalletByWalletId(string walletId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public PortfolioWallet GetWalletByWalletName(string walletName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteInternalWalletByWalletName(string walletName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteExternalWalletByWalletName(string walletName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<PortfolioWallet> GetWallets()
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IPortfolioWalletManager.AddExternalWallet(string walletName, string brokerId, string sourceName)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IPortfolioWalletManager.AddInternalWallet(string walletId, string brokerId, string walletName)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    public class PortfolioPublisherMock : IServiceBusPublisher<Portfolio>
-    {
-        public Action<Portfolio> Callback { get; set; }
-
-        public async Task PublishAsync(Portfolio message)
-        {
-            Callback?.Invoke(message);
-        }
-
-        public async Task PublishAsync(IEnumerable<Portfolio> messageList)
-        {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
-        }
-    }
-
-
-    public class PortfolioFeeSharePublisherMock : IServiceBusPublisher<PortfolioFeeShare>
-    {
-        public Action<PortfolioFeeShare> Callback { get; set; }
-
-        public async Task PublishAsync(PortfolioFeeShare message)
-        {
-            Callback?.Invoke(message);
-        }
-
-        public async Task PublishAsync(IEnumerable<PortfolioFeeShare> messageList)
-        {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
-        }
-    }
-
-    public class PortfolioTraderPublisherMock : IServiceBusPublisher<PortfolioTrade>
-    {
-        public Action<PortfolioTrade> Callback { get; set; }
-
-        public async Task PublishAsync(PortfolioTrade message)
-        {
-            Callback?.Invoke(message);
-        }
-
-        public async Task PublishAsync(IEnumerable<PortfolioTrade> messageList)
-        {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
-        }
-    }
-
-    public class PortfolioManualSettlementPublisherMock : IServiceBusPublisher<PortfolioSettlement>
-    {
-        public Action<PortfolioSettlement> Callback { get; set; }
-
-        public async Task PublishAsync(PortfolioSettlement message)
-        {
-            Callback?.Invoke(message);
-        }
-
-        public async Task PublishAsync(IEnumerable<PortfolioSettlement> messageList)
-        {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
-        }
-    }
-
-
-    public class PortfolioChangeBalancePublisherMock: IServiceBusPublisher<PortfolioChangeBalance>
-    {
-        public Action<PortfolioChangeBalance> Callback { get; set; }
-        public async Task PublishAsync(PortfolioChangeBalance message)
-        {
-            Callback?.Invoke(message);
-        }
-
-        public async Task PublishAsync(IEnumerable<PortfolioChangeBalance> messageList)
-        {
-            foreach (var message in messageList)
-            {
-                Callback?.Invoke(message);
-            }
-        }
-    }
-
-    public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSql>
-    {
-        private Portfolio _portfolio = new()
-        {
-            Assets = new Dictionary<string, Portfolio.Asset>()
-        };
-
-        public async ValueTask InsertAsync(PortfolioNoSql entity)
-        {
-            _portfolio = entity.Portfolio;
-        }
-
-        public async ValueTask InsertOrReplaceAsync(PortfolioNoSql entity)
-        {
-            _portfolio = entity.Portfolio;
-        }
-
-        public ValueTask CleanAndKeepLastRecordsAsync(string partitionKey, int amount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask BulkInsertOrReplaceAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask CleanAndBulkInsertAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask CleanAndBulkInsertAsync(string partitionKey, IEnumerable<PortfolioNoSql> entity,
-            DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<OperationResult> ReplaceAsync(string partitionKey, string rowKey, Func<PortfolioNoSql, bool> updateCallback,
-            DataSynchronizationPeriod syncPeriod = DataSynchronizationPeriod.Sec5)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<OperationResult> MergeAsync(string partitionKey, string rowKey, Func<PortfolioNoSql, bool> updateCallback,
-            DataSynchronizationPeriod syncPeriod = DataSynchronizationPeriod.Sec5)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
-        {
-            _portfolio = new()
-            {
-                Assets = new Dictionary<string, Portfolio.Asset>()
-            };
-
-            return new List<PortfolioNoSql>() { PortfolioNoSql.Create(_portfolio) };
-        }
-
-        public IAsyncEnumerable<PortfolioNoSql> GetAllAsync(int bulkRecordsCount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<IEnumerable<PortfolioNoSql>> GetAsync(string partitionKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<PortfolioNoSql> GetAsync(string partitionKey, string rowKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<IReadOnlyList<PortfolioNoSql>> GetMultipleRowKeysAsync(string partitionKey, IEnumerable<string> rowKeys)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<PortfolioNoSql> DeleteAsync(string partitionKey, string rowKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<IEnumerable<PortfolioNoSql>> QueryAsync(string query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<IEnumerable<PortfolioNoSql>> GetHighestRowAndBelow(string partitionKey, string rowKeyFrom, int amount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask CleanAndKeepMaxPartitions(int maxAmount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask CleanAndKeepMaxRecords(string partitionKey, int maxAmount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<int> GetCountAsync(string partitionKey)
-        {
-            throw new NotImplementedException();
-        }
-
-        public ValueTask<ITransactionsBuilder<PortfolioNoSql>> BeginTransactionAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    public class IndexPricesMock : IIndexPricesClient
-    {
-        public Dictionary<string, IndexPrice> Prices = new Dictionary<string, IndexPrice>();
-        public void Set(string asset, decimal price)
-        { 
-            if(!Prices.TryGetValue(asset, out var item))
-            {
-                item = new IndexPrice()
-                {
-                    Asset = asset,
-                    UpdateDate = DateTime.UtcNow,
-                };
-            }
-            item.UsdPrice = price;
-            Prices[asset] = item;
-        }
-
-        public IndexPrice GetIndexPriceByAssetAsync(string asset)
-        {
-            if (Prices.TryGetValue(asset, out var item))
-            {
-                return item;
-            }
-            return null;
-        }
-
-        public (IndexPrice, decimal) GetIndexPriceByAssetVolumeAsync(string asset, decimal volume)
-        {
-            var item = GetIndexPriceByAssetAsync(asset);
-
-            if (item == null)
-                return (new IndexPrice
-                {
-                    Asset = asset,
-                    UpdateDate = DateTime.UtcNow,
-                    UsdPrice = 0m
-                }, 0m);
-
-            return (item, item.UsdPrice * volume);
-        }
-
-        public List<IndexPrice> GetIndexPricesAsync()
-        {
-            return Prices.Values.ToList();
-        }
-    }
-
     public class TestPortfolioManager
     {
         public PortfolioManager _service;
-        public PortfolioPublisherMock _portfolioPublisherMock = new PortfolioPublisherMock();
-        public IndexPricesMock _indexPricesMock = new IndexPricesMock();
-        public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
-        public PortfolioTraderPublisherMock _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
-        private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
-        private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
-        public PortfolioChangeBalancePublisherMock _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
+        public PortfolioPublisherMock _portfolioPublisherMock;
+        public IndexPricesMock _indexPricesMock;
+        public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock;
+        public PortfolioTraderPublisherMock _portfolioTraderPublisherMock;
+        private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock;
+        private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter;
+        public PortfolioChangeBalancePublisherMock _portfolioChangeBalancePublisherMock;
+        public IndexAssetDictionaryClientMock _indexAssetDictionaryClientMock;
 
         [SetUp]
         public void Setup()
         {
+
+            _portfolioPublisherMock = new PortfolioPublisherMock();
+            _indexPricesMock = new IndexPricesMock();
+            _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
+            _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
+            _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
+            _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
+            _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
+            _indexAssetDictionaryClientMock = new IndexAssetDictionaryClientMock();
+
             _service = new PortfolioManager(new PortfolioWalletManagerMock(),
-                _portfolioPublisherMock,
-                _indexPricesMock,
-                _portfolioFeeSharePublisherMock,
-                _portfolioTraderPublisherMock,
-                _portfolioManualSettelmentMock,
-                _myNoSqlPortfolioWriter,
-                _portfolioChangeBalancePublisherMock
-                );
+                    _portfolioPublisherMock,
+                    _indexPricesMock,
+                    _portfolioFeeSharePublisherMock,
+                    _portfolioTraderPublisherMock,
+                    _portfolioManualSettelmentMock,
+                    _myNoSqlPortfolioWriter,
+                    _portfolioChangeBalancePublisherMock,
+                    _indexAssetDictionaryClientMock
+                    );
             _service.Load();
         }
 
@@ -626,6 +266,141 @@ namespace Service.Liquidity.TradingPortfolio.Tests
 
             _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-1250m);
         }
-    }
 
+        [Test]
+        public async Task ApplySwapWithIndexInstrument_1()
+        {
+            _indexAssetDictionaryClientMock.Data.Add("CIC", new IndexAsset
+            {
+                Symbol = "CIC",
+                Broker = "jetwallet",
+                Basket = new List<IndexAsset.BasketAsset>()
+                    {
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "BTC",
+                            Volume = 1,
+                            PriceInstrumentSymbol = "BTCUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "ETH",
+                            Volume = 10,
+                            PriceInstrumentSymbol = "ETHUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                    },
+                StartPrice = 100m,
+                StartTime = DateTime.UtcNow,
+                QuoteInstrumentSymbol = "CICUSD",
+                LastUpdate = default,
+                LastRebalance = default,
+                NextRebalance = default
+            }
+            );
+
+            await _service.ApplySwapsAsync(new[]
+            {
+                ClientToBroker(1m, "CIC", 1000m, "USD", "SP-Broker"),
+            });
+
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("CIC").NetBalance.Should().Be(0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalance.Should().Be(1m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalance.Should().Be(10m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").NetBalance.Should().Be(-1000m);
+        }
+
+
+        [Test]
+        public async Task ApplySwapWithIndexInstrument_2()
+        {
+            _indexAssetDictionaryClientMock.Data.Add("CIC", new IndexAsset
+            {
+                Symbol = "CIC",
+                Broker = "jetwallet",
+                Basket = new List<IndexAsset.BasketAsset>()
+                    {
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "BTC",
+                            Volume = 1,
+                            PriceInstrumentSymbol = "BTCUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "ETH",
+                            Volume = 10,
+                            PriceInstrumentSymbol = "ETHUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                    },
+                StartPrice = 100m,
+                StartTime = DateTime.UtcNow,
+                QuoteInstrumentSymbol = "CICUSD",
+                LastUpdate = default,
+                LastRebalance = default,
+                NextRebalance = default
+            }
+            );
+
+            _indexAssetDictionaryClientMock.Data.Add("CIN", new IndexAsset
+            {
+                Symbol = "CIN",
+                Broker = "jetwallet",
+                Basket = new List<IndexAsset.BasketAsset>()
+                    {
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "BTC",
+                            Volume = 1,
+                            PriceInstrumentSymbol = "BTCUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "SOL",
+                            Volume = 10,
+                            PriceInstrumentSymbol = "SOLUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                        new IndexAsset.BasketAsset
+                        {
+                            Symbol = "XLM",
+                            Volume = 20,
+                            PriceInstrumentSymbol = "XLMUSD",
+                            DirectInstrumentPrice = true,
+                            TargetRebalanceWeight = 0.5m
+                        },
+                    },
+                StartPrice = 100m,
+                StartTime = DateTime.UtcNow,
+                QuoteInstrumentSymbol = "CINUSD",
+                LastUpdate = default,
+                LastRebalance = default,
+                NextRebalance = default
+            }
+            );
+
+
+            await _service.ApplySwapsAsync(new[]
+            {
+                ClientToBroker(1m, "CIC", 1m, "CIN", "SP-Broker"),
+            });
+
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("CIC").NetBalance.Should().Be(0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("CIN").NetBalance.Should().Be(0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalance.Should().Be(0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalance.Should().Be(10m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("SOL").NetBalance.Should().Be(-10m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("XLM").NetBalance.Should().Be(-20m);
+        }
+    }
 }
