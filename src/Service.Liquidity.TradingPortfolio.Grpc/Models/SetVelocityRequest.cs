@@ -9,5 +9,6 @@ namespace Service.Liquidity.TradingPortfolio.Grpc.Models
         [DataMember(Order = 2)] public string Wallet { get; set; }
         [DataMember(Order = 3)] public string Asset { get; set; }
         [DataMember(Order = 4)] public decimal Velocity { get; set; }
+        [DataMember(Order = 5)] public decimal User { get; set; }
     }
 }

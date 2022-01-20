@@ -72,6 +72,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             using var locker = _myLocker.GetLocker().GetAwaiter().GetResult();
             RecalculatePortfolio();
             var portfolio = _portfolio.MakeCopy();
+            if (portfolio.Assets == null)
+            {
+                portfolio.Assets = new();
+            }
+
             return portfolio;
         }
 
@@ -87,6 +92,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             var totalNetInUsd = 0m;
             var totalDailyVelocityRiskInUsd = 0m;
+            
+            if (_portfolio.Assets == null)
+                return;
+            
             foreach (var asset in _portfolio?.Assets?.Values)
             {
                 var netBalance = 0m;
@@ -95,8 +104,16 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 {
                     var (_, usdBalance) = _indexPricesClient.GetIndexPriceByAssetVolumeAsync(asset.Symbol, walletBalance.Balance);
                     walletBalance.BalanceInUsd = usdBalance;
-                    netBalance += walletBalance.Balance;
-                    netBalanceInUsd += usdBalance;
+                    if (walletBalance.Wallet.IsInternal)
+                    {
+                        netBalance += walletBalance.Balance;
+                        netBalanceInUsd += usdBalance;
+                    }
+                    else
+                    {
+                        netBalance -= walletBalance.Balance;
+                        netBalanceInUsd -= usdBalance;
+                    }
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
