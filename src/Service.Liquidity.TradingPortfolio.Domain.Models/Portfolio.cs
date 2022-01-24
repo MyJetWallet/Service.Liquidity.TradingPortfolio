@@ -35,8 +35,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             [DataMember(Order = 2)] public Dictionary<string, WalletBalance> WalletBalances { get; set; }
             [DataMember(Order = 3)] public decimal NetBalance { get; set; }
             [DataMember(Order = 4)] public decimal NetBalanceInUsd { get; set; }
+            
+            [Obsolete("DailyVelocity is obsolete, use DailyVelocityLowOpenSum and DailyVelocityHighOpen", false)]
             [DataMember(Order = 5)] public decimal DailyVelocity { get; set; }
             [DataMember(Order = 6)] public decimal DailyVelocityRiskInUsd { get; set; }
+            [DataMember(Order = 7)] public decimal DailyVelocityLowOpen { get; set; }
+            [DataMember(Order = 8)] public decimal DailyVelocityHighOpen { get; set; }
 
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
@@ -52,7 +56,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                             BrokerId = portfolioWallet.BrokerId,
                             ExternalSource = portfolioWallet.ExternalSource,
                             IsInternal = portfolioWallet.IsInternal,
-                            WalletId = portfolioWallet.WalletId
+                            WalletId = portfolioWallet.WalletId,
                         },
                     };
                     WalletBalances[portfolioWallet.Name] = walletBalance;

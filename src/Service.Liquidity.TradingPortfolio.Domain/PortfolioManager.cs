@@ -14,7 +14,6 @@ using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
-using Service.Liquidity.Velocity.Client;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
@@ -30,7 +29,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
-        private readonly ILiquidityVelocityClient _liquidityVelocityClient;
 
         private Portfolio _portfolio = new Portfolio()
         {
@@ -47,7 +45,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher, 
             IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter, 
             IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher,
-            IIndexAssetDictionaryClient indexAssetDictionaryClient, ILiquidityVelocityClient liquidityVelocityClient)
+            IIndexAssetDictionaryClient indexAssetDictionaryClient)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
@@ -58,7 +56,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
             _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
             _indexAssetDictionaryClient = indexAssetDictionaryClient;
-            _liquidityVelocityClient = liquidityVelocityClient;
         }
 
         public void Load()
@@ -86,14 +83,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
 
             return portfolio;
-        }
-
-        public async Task SetDailyVelocityAsync(string assetSymbol, decimal velocity)
-        {
-            using var locker = await _myLocker.GetLocker();
-
-            _portfolio.GetOrCreateAssetBySymbol(assetSymbol).DailyVelocity = velocity;
-            await PublishPortfolioAsync();
         }
 
         private void RecalculatePortfolio()
@@ -125,19 +114,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
-                asset.DailyVelocity = 0;
-                asset.DailyVelocityRiskInUsd = 0;
                 
-                var velocity = _liquidityVelocityClient.GetVelocityByAsset("jetwallet", asset.Symbol);
-                if (velocity != null)
-                {
-                    var velocityRisk = velocity.Velocity;
-                    asset.DailyVelocity = asset.NetBalance >= 0
-                        ? velocityRisk.HighOpenAverage
-                        : velocityRisk.LowOpenAverage;
-                    asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * asset.DailyVelocity);
-                }
-
+                var velocity = asset.NetBalance >= 0
+                    ? asset.DailyVelocityHighOpen
+                    : asset.DailyVelocityLowOpen;
+                asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * velocity);
+                
                 totalNetInUsd += asset.NetBalanceInUsd;
                 totalDailyVelocityRiskInUsd += asset.DailyVelocityRiskInUsd;
             }
@@ -497,19 +479,33 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             await _serviceBusChangeBalancePublisher.PublishAsync(portfolioChangeBalance);
         }
-
-        public async Task SetManualVelocityAsync(string asset, decimal velocity)
+        
+        public async Task SetDailyVelocityAsync(string asset, decimal velocity)
         {
             using var locker = await _myLocker.GetLocker();
 
             var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
             if (portfolioAsset != null)
             {
-                portfolioAsset.DailyVelocity = velocity;
+                portfolioAsset.DailyVelocityLowOpen = velocity;
+                portfolioAsset.DailyVelocityHighOpen = velocity;
             }
             await PublishPortfolioAsync();
         }
 
+        public async Task SetVelocityLowHighAsync(string asset, decimal lowOpen, decimal highOpen)
+        {
+            using var locker = await _myLocker.GetLocker();
+
+            var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+            if (portfolioAsset != null)
+            {
+                portfolioAsset.DailyVelocityLowOpen = lowOpen;
+                portfolioAsset.DailyVelocityHighOpen = highOpen;
+            }
+            await PublishPortfolioAsync();
+        }
+        
         public async Task SetManualSettelmentAsync(PortfolioSettlement settelment)
         {
             if (!ApplySettelmentItem(

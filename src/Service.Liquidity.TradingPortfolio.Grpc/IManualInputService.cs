@@ -1,4 +1,5 @@
-﻿using Service.Liquidity.TradingPortfolio.Grpc.Models;
+﻿using System;
+using Service.Liquidity.TradingPortfolio.Grpc.Models;
 using System.ServiceModel;
 using System.Threading.Tasks;
 
@@ -9,7 +10,11 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
     {
         #region Manual Settings
         [OperationContract]
+        [Obsolete("SetManualVelocityAsync is obsolete, use SetManualVelocityLowHighAsync", false)]
         Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request);
+
+        [OperationContract]
+        Task<SetVelocityResponse> SetVelocityLowHighAsync(SetVelocityRequest request);
         
         [OperationContract]
         Task<BalanceResponse> SetBalanceAsync(BalanceRequest request);

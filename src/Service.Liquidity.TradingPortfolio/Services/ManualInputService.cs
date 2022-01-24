@@ -77,7 +77,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 return new SettlementResponse()
                 {
                     Success = false,
-                    ErrorMessage = $"Can't set new settelment by user {request.User}"
+                    ErrorMessage = $"Can't set new settlement by user {request.User}"
                 };
             }
         }
@@ -178,14 +178,33 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 return new BalanceResponse() { ErrorMessage = e.Message, Success = false };
             }
         }
-
+        
+        [Obsolete("SetManualVelocityAsync is obsolete, use SetManualVelocityLowHighAsync", false)]
         public async Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
         {
             try
             {
-                await _portfolioManager.SetDailyVelocityAsync(
+                await _portfolioManager.SetVelocityLowHighAsync(
                     request.Asset,
+                    request.Velocity,
                     request.Velocity);
+
+                return new SetVelocityResponse() { ErrorMessage = string.Empty, Success = true };
+            }
+            catch (Exception e)
+            {
+                return new SetVelocityResponse() { ErrorMessage = e.Message, Success = false };
+            }
+        }
+        
+        public async Task<SetVelocityResponse> SetVelocityLowHighAsync(SetVelocityRequest request)
+        {
+            try
+            {
+                await _portfolioManager.SetVelocityLowHighAsync(
+                    request.Asset,
+                    request.VelocityLowOpen,
+                    request.VelocityHighOpen);
 
                 return new SetVelocityResponse() { ErrorMessage = string.Empty, Success = true };
             }
