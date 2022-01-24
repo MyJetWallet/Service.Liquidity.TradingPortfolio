@@ -20,7 +20,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter;
         public PortfolioChangeBalancePublisherMock _portfolioChangeBalancePublisherMock;
         public IndexAssetDictionaryClientMock _indexAssetDictionaryClientMock;
-
+        public LiquidityVelocityClientMock _liquidityVelocityClientMock;
         [SetUp]
         public void Setup()
         {
@@ -33,6 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
             _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
             _indexAssetDictionaryClientMock = new IndexAssetDictionaryClientMock();
+            _liquidityVelocityClientMock = new LiquidityVelocityClientMock();
 
             _service = new PortfolioManager(new PortfolioWalletManagerMock(),
                     _portfolioPublisherMock,
@@ -42,7 +43,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                     _portfolioManualSettelmentMock,
                     _myNoSqlPortfolioWriter,
                     _portfolioChangeBalancePublisherMock,
-                    _indexAssetDictionaryClientMock
+                    _indexAssetDictionaryClientMock,
+                    _liquidityVelocityClientMock
                     );
             _service.Load();
         }
@@ -193,15 +195,15 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             };
         }
 
-        [Test]
-        public async Task SetVelocity()
-        {
-            await _service.SetDailyVelocityAsync("BTC", 0.02m);
-            await _service.SetDailyVelocityAsync("ETH", 0.05m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocity.Should().Be(0.02m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocity.Should().Be(0.05m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocity.Should().Be(0.00m);
-        }
+        // [Test]
+        // public async Task SetVelocity()
+        // {
+        //     await _service.SetDailyVelocityAsync("BTC", 0.02m);
+        //     await _service.SetDailyVelocityAsync("ETH", 0.05m);
+        //     _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocity.Should().Be(0.02m);
+        //     _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocity.Should().Be(0.05m);
+        //     _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocity.Should().Be(0.00m);
+        // }
 
         [Test]
         public async Task CheckPortfolioInUsd()
@@ -251,20 +253,20 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
             });
 
-            await _service.SetDailyVelocityAsync("BTC", 0.01m);
-            await _service.SetDailyVelocityAsync("ETH", 0.02m);
+            //await _service.SetDailyVelocityAsync("BTC", 1m);
+            //await _service.SetDailyVelocityAsync("ETH", 0.5m);
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalance.Should().Be(1m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalanceInUsd.Should().Be(41000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocity.Should().Be(0.01m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityRiskInUsd.Should().Be(-410m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocity.Should().Be(1m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityRiskInUsd.Should().Be(-41000m);
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalance.Should().Be(-10m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalanceInUsd.Should().Be(-42000m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocity.Should().Be(0.02m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityRiskInUsd.Should().Be(-840m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocity.Should().Be(0.5m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityRiskInUsd.Should().Be(-21000m);
 
-            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-1250m);
+            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-62000m);
         }
 
         [Test]
