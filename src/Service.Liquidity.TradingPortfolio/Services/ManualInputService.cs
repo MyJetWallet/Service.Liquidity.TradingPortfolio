@@ -178,26 +178,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 return new BalanceResponse() { ErrorMessage = e.Message, Success = false };
             }
         }
-        
-        [Obsolete("SetManualVelocityAsync is obsolete, use SetManualVelocityLowHighAsync", false)]
+      
         public async Task<SetVelocityResponse> SetVelocityAsync(SetVelocityRequest request)
-        {
-            try
-            {
-                await _portfolioManager.SetVelocityLowHighAsync(
-                    request.Asset,
-                    request.Velocity,
-                    request.Velocity);
-
-                return new SetVelocityResponse() { ErrorMessage = string.Empty, Success = true };
-            }
-            catch (Exception e)
-            {
-                return new SetVelocityResponse() { ErrorMessage = e.Message, Success = false };
-            }
-        }
-        
-        public async Task<SetVelocityResponse> SetVelocityLowHighAsync(SetVelocityRequest request)
         {
             try
             {
