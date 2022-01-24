@@ -2,6 +2,7 @@ using Autofac;
 using MyJetWallet.Sdk.NoSql;
 using Service.AssetsDictionary.Client;
 using Service.IndexPrices.Client;
+using Service.Liquidity.Velocity.Client;
 
 namespace Service.Liquidity.TradingPortfolio.Modules
 {
@@ -15,6 +16,7 @@ namespace Service.Liquidity.TradingPortfolio.Modules
             //builder.RegisterCurrentPricesClient(myNoSqlClient);
             // $ для каждого актива
             builder.RegisterIndexPricesClient(myNoSqlClient);
+            builder.RegisterLiquidityVelocityClient(myNoSqlClient);
         }
     }
 }

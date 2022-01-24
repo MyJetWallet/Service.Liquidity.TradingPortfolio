@@ -14,6 +14,7 @@ using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
+using Service.Liquidity.Velocity.Client;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
@@ -29,6 +30,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
+        private readonly ILiquidityVelocityClient _liquidityVelocityClient;
 
         private Portfolio _portfolio = new Portfolio()
         {
@@ -45,7 +47,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher, 
             IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter, 
             IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher,
-            IIndexAssetDictionaryClient indexAssetDictionaryClient)
+            IIndexAssetDictionaryClient indexAssetDictionaryClient, ILiquidityVelocityClient liquidityVelocityClient)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
@@ -56,6 +58,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
             _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
             _indexAssetDictionaryClient = indexAssetDictionaryClient;
+            _liquidityVelocityClient = liquidityVelocityClient;
         }
 
         public void Load()
@@ -122,8 +125,19 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
-                asset.DailyVelocityRiskInUsd = - Math.Abs(netBalanceInUsd * asset.DailyVelocity);
+                asset.DailyVelocity = 0;
+                asset.DailyVelocityRiskInUsd = 0;
                 
+                var velocity = _liquidityVelocityClient.GetVelocityByAsset("jetwallet", asset.Symbol);
+                if (velocity != null)
+                {
+                    var velocityRisk = velocity.Velocity;
+                    asset.DailyVelocity = asset.NetBalance >= 0
+                        ? velocityRisk.HighOpenAverage
+                        : velocityRisk.LowOpenAverage;
+                    asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * asset.DailyVelocity);
+                }
+
                 totalNetInUsd += asset.NetBalanceInUsd;
                 totalDailyVelocityRiskInUsd += asset.DailyVelocityRiskInUsd;
             }
@@ -149,7 +163,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         }
 
         private bool ApplySwapItem(string walletId1, string assetId1, decimal volume1,
-            string walletId2, string assetId2, decimal volume2)
+            string walletId2, string assetId2, decimal volume2, string brokerId)
         {
             var retval = false;
             var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
@@ -200,7 +214,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
         }
 
-        private bool ApplyFeeItem(string walletId, string assetId, decimal volume)
+        private bool ApplyFeeItem(string walletId, string assetId, decimal volume, string brokerId)
         {
             var retval = false;
             var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
@@ -260,7 +274,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
         private bool ApplyTradeItem(string walletId, string assetId1, decimal volume1,
             string assetId2, decimal volume2,
-            string feeAssetId, decimal feeVolume)
+            string feeAssetId, decimal feeVolume, string brokerId)
         {
             var retval = false;
             var internalPortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletName(walletId);
@@ -313,7 +327,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                         Convert.ToDecimal(message.Volume1),
                         message.WalletId2,
                         message.AssetId2,
-                        Convert.ToDecimal(message.Volume2)
+                        Convert.ToDecimal(message.Volume2),
+                        message.BrokerId
                     ))
                 {
                     continue;
@@ -372,7 +387,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                         message.QuoteAsset,
                         message.OppositeVolume,
                         message.FeeAsset,
-                        message.FeeVolume))
+                        message.FeeVolume,
+                        message.AssociateBrokerId))
                 {
                     continue;
                 }
@@ -422,7 +438,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
             if (!ApplyFeeItem(message.ConverterWalletId,
                     message.FeeShareAsset,
-                    message.FeeShareAmountInTargetAsset))
+                    message.FeeShareAmountInTargetAsset,
+                    message.BrokerId))
             {
                 return;
             }
