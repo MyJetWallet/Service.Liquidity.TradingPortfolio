@@ -101,16 +101,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 {
                     var (_, usdBalance) = _indexPricesClient.GetIndexPriceByAssetVolumeAsync(asset.Symbol, walletBalance.Balance);
                     walletBalance.BalanceInUsd = usdBalance;
-                    if (walletBalance.Wallet.IsInternal)
-                    {
-                        netBalance += walletBalance.Balance;
-                        netBalanceInUsd += usdBalance;
-                    }
-                    else
-                    {
-                        netBalance -= walletBalance.Balance;
-                        netBalanceInUsd -= usdBalance;
-                    }
+                    netBalance += walletBalance.Balance;
+                    netBalanceInUsd += usdBalance;
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
