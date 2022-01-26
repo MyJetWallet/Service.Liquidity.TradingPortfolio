@@ -27,12 +27,21 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             }
             return asset;
         }
+        
+        public Asset GetAssetBySymbol(string symbol)
+        {
+            if (!Assets.TryGetValue(symbol, out var asset))
+            {
+                return null;
+            }
+            return asset;
+        }
 
         [DataContract]
         public class Asset
         {
             [DataMember(Order = 1)] public string Symbol { get; set; }
-            [DataMember(Order = 2)] public Dictionary<string, WalletBalance> WalletBalances { get; set; }
+            [DataMember(Order = 2)] public Dictionary<string, WalletBalance> WalletBalances { get; set; } 
             [DataMember(Order = 3)] public decimal NetBalance { get; set; }
             [DataMember(Order = 4)] public decimal NetBalanceInUsd { get; set; }
             

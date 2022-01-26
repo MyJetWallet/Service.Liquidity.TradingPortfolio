@@ -70,6 +70,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
             _portfolio = data.Portfolio;
             RecalculatePortfolio();
+            var newPortfolio = CleanupPortfolioFromZeroBalanceAssets();
+            _portfolio = newPortfolio; 
         }
 
         public Portfolio GetCurrentPortfolio()
@@ -117,6 +119,71 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
             _portfolio.TotalNetInUsd = totalNetInUsd;
             _portfolio.TotalDailyVelocityRiskInUsd = totalDailyVelocityRiskInUsd;
+        }
+        
+        private Portfolio CleanupPortfolioFromZeroBalanceAssets()
+        {
+            var newPortfolio = new Portfolio()
+            {
+                Assets =new Dictionary<string, Portfolio.Asset>(),
+                TotalNetInUsd = _portfolio.TotalNetInUsd,
+                TotalDailyVelocityRiskInUsd = _portfolio.TotalDailyVelocityRiskInUsd
+            };
+
+            foreach (var asset in _portfolio?.Assets)
+            {
+                var newAsset = new Portfolio.Asset
+                {
+                    WalletBalances = new Dictionary<string, Portfolio.WalletBalance>(),
+                    Symbol = asset.Value.Symbol,
+                    NetBalance = asset.Value.NetBalance,
+                    NetBalanceInUsd = asset.Value.NetBalanceInUsd,
+                    DailyVelocityRiskInUsd = asset.Value.DailyVelocityRiskInUsd,
+                    DailyVelocityLowOpen = asset.Value.DailyVelocityLowOpen,
+                    DailyVelocityHighOpen = asset.Value.DailyVelocityHighOpen,
+                };
+
+                var canBeRemoved = true;
+                if (asset.Value.WalletBalances == null)
+                {
+                    continue;
+                }
+
+
+                foreach (var walletBalance in asset.Value.WalletBalances)
+                {
+                    var newWalletBalance = new Portfolio.WalletBalance
+                    {
+                        Wallet = new PortfolioWallet
+                        {
+                            IsInternal = walletBalance.Value.Wallet.IsInternal,
+                            Name = walletBalance.Value.Wallet.Name,
+                            WalletId = walletBalance.Value.Wallet.WalletId,
+                            ExternalSource = walletBalance.Value.Wallet.ExternalSource,
+                            BrokerId = walletBalance.Value.Wallet.BrokerId
+                        },
+                        Balance = walletBalance.Value.Balance,
+                        BalanceInUsd = walletBalance.Value.BalanceInUsd
+
+                    };
+
+                    if (newWalletBalance.Balance == 0)
+                    {
+                        continue;
+                    }
+
+                    canBeRemoved = false;
+                    newAsset.WalletBalances[walletBalance.Key] = newWalletBalance;
+                }
+
+                if (canBeRemoved)
+                {
+                    continue;
+                    
+                }
+                newPortfolio.Assets[asset.Key] = newAsset;
+            }
+            return newPortfolio;
         }
 
         private async Task PublishPortfolioAsync()
@@ -171,8 +238,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             var index = _indexAssetDictionaryClient.GetIndexAsset(DomainConstants.DefaultBroker, asset);
             if (index == null)
             {
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(asset);
-                var walletBalance = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+                var walletBalance = portfolioAsset.GetOrCreateWalletBalance(portfolioWallet);
                 walletBalance.Balance += Convert.ToDecimal(volume);
                 return;
             }
@@ -182,8 +249,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 var basketAsset = item.Symbol;
                 var basketVolume = item.Volume * volume;
                 
-                var asset1 = _portfolio.GetOrCreateAssetBySymbol(basketAsset);
-                var walletBalance = asset1.GetOrCreateWalletBalance(portfolioWallet);
+                var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(basketAsset);
+                var walletBalance = portfolioAsset.GetOrCreateWalletBalance(portfolioWallet);
                 walletBalance.Balance += Convert.ToDecimal(basketVolume);
             }
         }
@@ -476,7 +543,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             using var locker = await _myLocker.GetLocker();
 
-            var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+            var portfolioAsset = _portfolio.GetAssetBySymbol(asset);
             if (portfolioAsset != null)
             {
                 portfolioAsset.DailyVelocityLowOpen = velocity;
@@ -489,7 +556,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             using var locker = await _myLocker.GetLocker();
 
-            var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
+            var portfolioAsset = _portfolio.GetAssetBySymbol(asset);
             if (portfolioAsset != null)
             {
                 portfolioAsset.DailyVelocityLowOpen = lowOpen;
@@ -498,26 +565,26 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
         
-        public async Task SetManualSettelmentAsync(PortfolioSettlement settelment)
+        public async Task SetManualSettelmentAsync(PortfolioSettlement settlement)
         {
             if (!ApplySettelmentItem(
-                    settelment.Asset,
-                    settelment.WalletFrom,
-                    settelment.VolumeFrom,
-                    settelment.WalletTo,
-                    settelment.VolumeTo
+                    settlement.Asset,
+                    settlement.WalletFrom,
+                    settlement.VolumeFrom,
+                    settlement.WalletTo,
+                    settlement.VolumeTo
                 ))
             {
                 return;
             }
 
-            await PublishPortfolioSettelmentAsync(settelment);
+            await PublishPortfolioSettelmentAsync(settlement);
             await PublishPortfolioAsync();
         }
 
-        private async Task PublishPortfolioSettelmentAsync(PortfolioSettlement settelment)
+        private async Task PublishPortfolioSettelmentAsync(PortfolioSettlement settlement)
         {
-            await _serviceBusSettementPublisher.PublishAsync(settelment);
+            await _serviceBusSettementPublisher.PublishAsync(settlement);
         }
     }
 }

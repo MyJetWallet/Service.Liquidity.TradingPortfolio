@@ -36,9 +36,9 @@ namespace Service.Liquidity.TradingPortfolio
         {
             _logger.LogInformation("OnStarted has been called.");
             _myNoSqlClientLifeTime.Start();
-            _serviceBusLifeTime.Start();
-            _portfolioManager.Load();
             _portfolioWalletManager.Load();
+            _portfolioManager.Load();
+            _serviceBusLifeTime.Start();
         }
 
         protected override void OnStopping()
