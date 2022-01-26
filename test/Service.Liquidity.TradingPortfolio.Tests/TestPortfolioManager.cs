@@ -196,14 +196,24 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         [Test]
         public async Task SetVelocity()
         {
+            await _service.ApplySwapsAsync(new[]
+            {
+                ClientToBroker(1m, "BTC", 40000m, "USD", "SP-Broker"),
+                ClientToBroker(40000m, "USD", 10m, "ETH", "SP-Broker-1"),
+            });
+            
             await _service.SetVelocityLowHighAsync("BTC", 0.01m, 0.1m);
             await _service.SetVelocityLowHighAsync("ETH", 0.02m, 0.2m);
+            await _service.SetVelocityLowHighAsync("USD", 0.03m, 0.3m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityLowOpen.Should().Be(0.01m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityHighOpen.Should().Be(0.1m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityLowOpen.Should().Be(0.02m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityHighOpen.Should().Be(0.2m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocityLowOpen.Should().Be(0.0m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocityHighOpen.Should().Be(0.0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocityLowOpen.Should().Be(0.03m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocityHighOpen.Should().Be(0.3m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("EUR").DailyVelocityLowOpen.Should().Be(0m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("EUR").DailyVelocityHighOpen.Should().Be(0m);
+
         }
 
         [Test]
