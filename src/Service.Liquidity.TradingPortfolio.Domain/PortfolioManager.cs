@@ -70,8 +70,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
             _portfolio = data.Portfolio;
             RecalculatePortfolio();
-            var newPortfolio = CleanupPortfolioFromZeroBalanceAssets();
-            _portfolio = newPortfolio; 
+            //var newPortfolio = CleanupPortfolioFromZeroBalanceAssets();
+            //_portfolio = newPortfolio; 
         }
 
         public Portfolio GetCurrentPortfolio()

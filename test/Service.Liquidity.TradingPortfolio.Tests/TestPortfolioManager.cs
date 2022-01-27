@@ -271,15 +271,15 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").NetBalanceInUsd.Should().Be(41000m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityLowOpen.Should().Be(0.01m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityHighOpen.Should().Be(0.1m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityRiskInUsd.Should().Be(-4100m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("BTC").DailyVelocityRiskInUsd.Should().Be(-41m);
 
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalance.Should().Be(-10m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").NetBalanceInUsd.Should().Be(-42000m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityLowOpen.Should().Be(0.02m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityHighOpen.Should().Be(0.2m);
-            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityRiskInUsd.Should().Be(-840m);
+            _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityRiskInUsd.Should().Be(-8.4m);
 
-            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-4940m);
+            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-49.4m);
         }
 
         [Test]
