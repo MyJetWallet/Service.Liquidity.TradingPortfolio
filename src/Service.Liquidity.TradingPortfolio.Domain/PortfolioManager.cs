@@ -112,7 +112,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 var velocity = asset.NetBalance >= 0
                     ? asset.DailyVelocityHighOpen
                     : asset.DailyVelocityLowOpen;
-                asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * velocity);
+                asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * velocity)/100;
                 
                 totalNetInUsd += asset.NetBalanceInUsd;
                 totalDailyVelocityRiskInUsd += asset.DailyVelocityRiskInUsd;
