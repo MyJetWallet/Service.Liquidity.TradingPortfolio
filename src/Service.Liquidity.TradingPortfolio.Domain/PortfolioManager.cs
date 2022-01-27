@@ -14,6 +14,7 @@ using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
+using Service.Liquidity.TradingPortfolio.Domain.Utils;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
@@ -102,9 +103,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 foreach (var walletBalance in asset.WalletBalances.Values)
                 {
                     var (_, usdBalance) = _indexPricesClient.GetIndexPriceByAssetVolumeAsync(asset.Symbol, walletBalance.Balance);
-                    walletBalance.BalanceInUsd = usdBalance;
+                    walletBalance.BalanceInUsd = MoneyTools.To2Digits(usdBalance);;
                     netBalance += walletBalance.Balance;
-                    netBalanceInUsd += usdBalance;
+                    netBalanceInUsd = MoneyTools.To2Digits(walletBalance.BalanceInUsd + netBalanceInUsd);
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
@@ -112,10 +113,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 var velocity = asset.NetBalance >= 0
                     ? asset.DailyVelocityHighOpen
                     : asset.DailyVelocityLowOpen;
-                asset.DailyVelocityRiskInUsd = -Math.Abs(netBalanceInUsd * velocity)/100;
+                asset.DailyVelocityRiskInUsd = MoneyTools.To2Digits(-Math.Abs(netBalanceInUsd * velocity)/100);
                 
-                totalNetInUsd += asset.NetBalanceInUsd;
-                totalDailyVelocityRiskInUsd += asset.DailyVelocityRiskInUsd;
+                totalNetInUsd = MoneyTools.To2Digits(totalNetInUsd + asset.NetBalanceInUsd);
+                totalDailyVelocityRiskInUsd = MoneyTools.To2Digits(totalDailyVelocityRiskInUsd + asset.DailyVelocityRiskInUsd);
             }
             _portfolio.TotalNetInUsd = totalNetInUsd;
             _portfolio.TotalDailyVelocityRiskInUsd = totalDailyVelocityRiskInUsd;
