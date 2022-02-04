@@ -110,10 +110,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
                 
-                var velocity = MoneyTools.To2Digits(asset.NetBalance >= 0
+                asset.DailyVelocity = MoneyTools.To2Digits(asset.NetBalance >= 0
                     ? asset.DailyVelocityHighOpen
                     : asset.DailyVelocityLowOpen);
-                asset.DailyVelocityRiskInUsd = MoneyTools.To2Digits(-Math.Abs(netBalanceInUsd * velocity)/100);
+                asset.DailyVelocityRiskInUsd = MoneyTools.To2Digits(-Math.Abs(netBalanceInUsd * asset.DailyVelocity)/100);
                 
                 totalNetInUsd = MoneyTools.To2Digits(totalNetInUsd + asset.NetBalanceInUsd);
                 totalDailyVelocityRiskInUsd = MoneyTools.To2Digits(totalDailyVelocityRiskInUsd + asset.DailyVelocityRiskInUsd);
