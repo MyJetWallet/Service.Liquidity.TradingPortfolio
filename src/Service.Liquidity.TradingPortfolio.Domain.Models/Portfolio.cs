@@ -18,6 +18,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 6)] public decimal TotalPositiveNetInUsd { get; set; }
         [DataMember(Order = 7)] public decimal TotalPositiveNetInPercent { get; set; }
         [DataMember(Order = 8)] public decimal TotalLeverage { get; set; }
+        [DataMember(Order = 9)] public decimal InternalBalanceInUsd { get; set; }
+        [DataMember(Order = 10)] public decimal ExternalBalanceInUsd { get; set; }
 
         public Asset GetOrCreateAssetBySymbol(string symbol)
         {
@@ -53,7 +55,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             [DataMember(Order = 6)] public decimal DailyVelocityRiskInUsd { get; set; }
             [DataMember(Order = 7)] public decimal DailyVelocityLowOpen { get; set; }
             [DataMember(Order = 8)] public decimal DailyVelocityHighOpen { get; set; }
-
+            [DataMember(Order = 9)] public decimal NetInternalBalance { get; set; }
+            [DataMember(Order = 10)] public decimal NetInternalBalanceInUsd { get; set; }
+            [DataMember(Order = 11)] public decimal NetExternalBalance { get; set; }
+            [DataMember(Order = 12)] public decimal NetExternalBalanceInUsd { get; set; }
+            
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
                 if (!WalletBalances.TryGetValue(portfolioWallet.Name, out var walletBalance))

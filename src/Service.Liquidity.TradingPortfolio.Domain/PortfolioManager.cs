@@ -98,19 +98,39 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
             var totalNegativeNetInUsd = 0m;
             var totalPositiveNetInUsd = 0m;
+            var totalInternalBalanceInUsd = 0m;
+            var totalExternalBalanceInUsd = 0m;
             foreach (var asset in _portfolio?.Assets?.Values)
             {
                 var netBalance = 0m;
                 var netBalanceInUsd = 0m;
+                var netInternalBalance = 0m;
+                var netInternalBalanceInUsd = 0m;
+                var netExternalBalance = 0m;
+                var netExternalBalanceInUsd = 0m;
                 foreach (var walletBalance in asset.WalletBalances.Values)
                 {
                     var (_, usdBalance) = _indexPricesClient.GetIndexPriceByAssetVolumeAsync(asset.Symbol, walletBalance.Balance);
-                    walletBalance.BalanceInUsd = MoneyTools.To2Digits(usdBalance);;
+                    walletBalance.BalanceInUsd = MoneyTools.To2Digits(usdBalance);
                     netBalance += walletBalance.Balance;
                     netBalanceInUsd = MoneyTools.To2Digits(walletBalance.BalanceInUsd + netBalanceInUsd);
+                    if (walletBalance.Wallet.IsInternal)
+                    {
+                        netInternalBalance += walletBalance.Balance;
+                        netInternalBalanceInUsd =  MoneyTools.To2Digits(netInternalBalanceInUsd + walletBalance.BalanceInUsd);
+                    }
+                    else
+                    {
+                        netExternalBalance += walletBalance.Balance;
+                        netExternalBalanceInUsd =  MoneyTools.To2Digits(netExternalBalanceInUsd + walletBalance.BalanceInUsd);
+                    }
                 }
                 asset.NetBalance = netBalance;
                 asset.NetBalanceInUsd = netBalanceInUsd;
+                asset.NetInternalBalance = netInternalBalance;
+                asset.NetInternalBalanceInUsd = netInternalBalanceInUsd;
+                asset.NetExternalBalance = netExternalBalance;
+                asset.NetExternalBalanceInUsd = netExternalBalanceInUsd;
                 
                 asset.DailyVelocity = MoneyTools.To2Digits(asset.NetBalance >= 0
                     ? asset.DailyVelocityLowOpen
@@ -124,15 +144,20 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     totalNegativeNetInUsd = MoneyTools.To2Digits(totalNegativeNetInUsd + asset.NetBalanceInUsd);
                 else
                     totalPositiveNetInUsd = MoneyTools.To2Digits(totalPositiveNetInUsd + asset.NetBalanceInUsd);
+                
+                totalInternalBalanceInUsd = MoneyTools.To2Digits(totalInternalBalanceInUsd + netInternalBalanceInUsd);
+                totalExternalBalanceInUsd = MoneyTools.To2Digits(totalExternalBalanceInUsd + netExternalBalanceInUsd);
 
             }
             _portfolio.TotalNetInUsd = totalNetInUsd;
             _portfolio.TotalDailyVelocityRiskInUsd = totalDailyVelocityRiskInUsd;
             _portfolio.TotalNegativeNetInUsd = totalNegativeNetInUsd;
-            _portfolio.TotalNegativeNetPercent = totalNegativeNetInUsd != 0m ? totalNetInUsd / totalNegativeNetInUsd * 100m : 0m;
+            _portfolio.TotalNegativeNetPercent = MoneyTools.To2Digits(totalNegativeNetInUsd != 0m ? totalNetInUsd / totalNegativeNetInUsd * 100m : 0m);
             _portfolio.TotalPositiveNetInUsd = totalPositiveNetInUsd;
-            _portfolio.TotalPositiveNetInPercent = totalPositiveNetInUsd != 0m ? totalNetInUsd / totalPositiveNetInUsd * 100m : 0m;
+            _portfolio.TotalPositiveNetInPercent = MoneyTools.To2Digits(totalPositiveNetInUsd != 0m ? totalNetInUsd / totalPositiveNetInUsd * 100m : 0m);
             _portfolio.TotalLeverage = totalNetInUsd != 0m ? totalPositiveNetInUsd / totalNetInUsd : 0m;
+            _portfolio.InternalBalanceInUsd = totalInternalBalanceInUsd;
+            _portfolio.ExternalBalanceInUsd = totalExternalBalanceInUsd;
         }
         
         private Portfolio CleanupPortfolioFromZeroBalanceAssets()
