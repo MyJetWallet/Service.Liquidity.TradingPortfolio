@@ -13,6 +13,11 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 1)] public Dictionary<string, Asset> Assets { get; set; }
         [DataMember(Order = 2)] public decimal TotalNetInUsd { get; set; }
         [DataMember(Order = 3)] public decimal TotalDailyVelocityRiskInUsd { get; set; }
+        [DataMember(Order = 4)] public decimal TotalNegativeNetInUsd { get; set; }
+        [DataMember(Order = 5)] public decimal TotalNegativeNetPercent { get; set; }
+        [DataMember(Order = 6)] public decimal TotalPositiveNetInUsd { get; set; }
+        [DataMember(Order = 7)] public decimal TotalPositiveNetInPercent { get; set; }
+        [DataMember(Order = 8)] public decimal TotalLeverage { get; set; }
 
         public Asset GetOrCreateAssetBySymbol(string symbol)
         {
@@ -44,7 +49,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             [DataMember(Order = 2)] public Dictionary<string, WalletBalance> WalletBalances { get; set; } 
             [DataMember(Order = 3)] public decimal NetBalance { get; set; }
             [DataMember(Order = 4)] public decimal NetBalanceInUsd { get; set; }
-            
             [DataMember(Order = 5)] public decimal DailyVelocity { get; set; }
             [DataMember(Order = 6)] public decimal DailyVelocityRiskInUsd { get; set; }
             [DataMember(Order = 7)] public decimal DailyVelocityLowOpen { get; set; }

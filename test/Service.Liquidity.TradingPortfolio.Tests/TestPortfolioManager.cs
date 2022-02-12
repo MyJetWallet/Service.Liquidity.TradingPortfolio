@@ -213,7 +213,14 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").DailyVelocityHighOpen.Should().Be(0.3m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("EUR").DailyVelocityLowOpen.Should().Be(0m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("EUR").DailyVelocityHighOpen.Should().Be(0m);
-
+            
+            _service.GetCurrentPortfolio().TotalNetInUsd.Should().Be(0m);
+            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(0m);
+            _service.GetCurrentPortfolio().TotalNegativeNetInUsd.Should().Be(0m);
+            _service.GetCurrentPortfolio().TotalPositiveNetInUsd.Should().Be(0m);
+            Math.Round(_service.GetCurrentPortfolio().TotalNegativeNetPercent, 2).Should().Be(0m);
+            Math.Round(_service.GetCurrentPortfolio().TotalPositiveNetInPercent, 2).Should().Be(0m);
+            _service.GetCurrentPortfolio().TotalLeverage.Should().Be(0m);
         }
 
         [Test]
@@ -248,7 +255,14 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").NetBalance.Should().Be(0m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("USD").NetBalanceInUsd.Should().Be(0m);
 
-            _service.GetCurrentPortfolio().TotalNetInUsd.Should().Be(-1000);
+            _service.GetCurrentPortfolio().TotalNetInUsd.Should().Be(-1000m);
+            _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(0m);
+            _service.GetCurrentPortfolio().TotalNegativeNetInUsd.Should().Be(-42000m);
+            _service.GetCurrentPortfolio().TotalPositiveNetInUsd.Should().Be(41000m);
+            Math.Round(_service.GetCurrentPortfolio().TotalNegativeNetPercent, 2).Should().Be(2.38m);
+            Math.Round(_service.GetCurrentPortfolio().TotalPositiveNetInPercent, 2).Should().Be(-2.44m);
+            _service.GetCurrentPortfolio().TotalLeverage.Should().Be(-41m);
+            
         }
 
         [Test]
@@ -279,7 +293,13 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityHighOpen.Should().Be(0.2m);
             _service.GetCurrentPortfolio().GetOrCreateAssetBySymbol("ETH").DailyVelocityRiskInUsd.Should().Be(-84m);
 
+            _service.GetCurrentPortfolio().TotalNetInUsd.Should().Be(-1000);
             _service.GetCurrentPortfolio().TotalDailyVelocityRiskInUsd.Should().Be(-88.1m);
+            _service.GetCurrentPortfolio().TotalNegativeNetInUsd.Should().Be(-42000m);
+            _service.GetCurrentPortfolio().TotalPositiveNetInUsd.Should().Be(41000m);
+            Math.Round(_service.GetCurrentPortfolio().TotalNegativeNetPercent, 2).Should().Be(2.38m);
+            Math.Round(_service.GetCurrentPortfolio().TotalPositiveNetInPercent, 2).Should().Be(-2.44m);
+            _service.GetCurrentPortfolio().TotalLeverage.Should().Be(-41m);
         }
 
         [Test]

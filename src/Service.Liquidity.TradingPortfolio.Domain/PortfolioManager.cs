@@ -95,7 +95,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             
             if (_portfolio.Assets == null)
                 return;
-            
+
+            var totalNegativeNetInUsd = 0m;
+            var totalPositiveNetInUsd = 0m;
             foreach (var asset in _portfolio?.Assets?.Values)
             {
                 var netBalance = 0m;
@@ -117,9 +119,20 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 
                 totalNetInUsd = MoneyTools.To2Digits(totalNetInUsd + asset.NetBalanceInUsd);
                 totalDailyVelocityRiskInUsd = MoneyTools.To2Digits(totalDailyVelocityRiskInUsd + asset.DailyVelocityRiskInUsd);
+                
+                if(asset.NetBalanceInUsd < 0)
+                    totalNegativeNetInUsd = MoneyTools.To2Digits(totalNegativeNetInUsd + asset.NetBalanceInUsd);
+                else
+                    totalPositiveNetInUsd = MoneyTools.To2Digits(totalPositiveNetInUsd + asset.NetBalanceInUsd);
+
             }
             _portfolio.TotalNetInUsd = totalNetInUsd;
             _portfolio.TotalDailyVelocityRiskInUsd = totalDailyVelocityRiskInUsd;
+            _portfolio.TotalNegativeNetInUsd = totalNegativeNetInUsd;
+            _portfolio.TotalNegativeNetPercent = totalNegativeNetInUsd != 0m ? totalNetInUsd / totalNegativeNetInUsd * 100m : 0m;
+            _portfolio.TotalPositiveNetInUsd = totalPositiveNetInUsd;
+            _portfolio.TotalPositiveNetInPercent = totalPositiveNetInUsd != 0m ? totalNetInUsd / totalPositiveNetInUsd * 100m : 0m;
+            _portfolio.TotalLeverage = totalNetInUsd != 0m ? totalPositiveNetInUsd / totalNetInUsd : 0m;
         }
         
         private Portfolio CleanupPortfolioFromZeroBalanceAssets()
