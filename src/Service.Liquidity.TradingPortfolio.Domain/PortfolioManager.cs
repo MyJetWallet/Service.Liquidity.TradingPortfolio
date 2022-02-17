@@ -4,7 +4,6 @@ using MyJetWallet.Sdk.ServiceBus;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.IndexPrices.Client;
 using Service.Liquidity.Converter.Domain.Models;
-using Service.Liquidity.PortfolioHedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -512,6 +511,63 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
+        public async Task ApplyTradeAsync(TradeMessage message)
+        {
+            using var locker = await _myLocker.GetLocker();
+            
+            var portfolioTrades = new List<PortfolioTrade>();
+            if (!ApplyTradeItem(
+                        message.AssociateWalletId,
+                        message.BaseAsset,
+                        message.Volume,
+                        message.QuoteAsset,
+                        message.OppositeVolume,
+                        message.FeeAsset,
+                        message.FeeVolume,
+                        message.AssociateBrokerId))
+            {
+                return;
+            }
+            var (asset1IndexPrice, volume1InUsd) =
+                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset, Convert.ToDecimal(message.Volume));
+
+            var (asset2IndexPrice, volume2InUsd) =
+                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset, Convert.ToDecimal(message.OppositeVolume));
+
+            var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletName(message.AssociateWalletId);
+            var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletName(message.AssociateBrokerId);
+
+            var portfolioTrade = new PortfolioTrade()
+            {
+                TradeId = message.Id,
+                AssociateBrokerId = message.AssociateBrokerId,
+                BaseWalletName = message.AssociateWalletId,  
+                QuoteWalletName = message.AssociateWalletId, 
+                AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
+                BaseAsset = message.BaseAsset,
+                QuoteAsset = message.QuoteAsset,
+                Side = message.Side,
+                Price = message.Price,
+                BaseVolume = Convert.ToDecimal(message.Volume),
+                QuoteVolume = Convert.ToDecimal(message.OppositeVolume),
+                BaseVolumeInUsd = volume1InUsd,
+                QuoteVolumeInUsd = volume2InUsd,
+                BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
+                QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
+                DateTime = DateTime.UtcNow,
+                Source = message.Source,
+                Comment = message.Comment,
+                FeeAsset = message.FeeAsset,
+                FeeVolume = Convert.ToDecimal(message.FeeVolume),
+                User = message.User
+            };
+            portfolioTrades.Add(portfolioTrade);
+            
+            await PublishPortfolioTradesAsync(portfolioTrades);
+            await PublishPortfolioAsync();
+        }
+
+        
         public async Task ApplyFeeShareAsync(FeeShareEntity message)
         {
             using var locker = await _myLocker.GetLocker();

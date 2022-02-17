@@ -6,7 +6,6 @@ using MyJetWallet.Sdk.ServiceBus;
 using MyServiceBus.Abstractions;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.Liquidity.Converter.Domain.Models;
-using Service.Liquidity.PortfolioHedger.Client;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
@@ -35,11 +34,6 @@ namespace Service.Liquidity.TradingPortfolio.Modules
                 $"TradingPortfolio",
                 TopicQueueType.PermanentWithSingleConnection);
 
-            builder.RegisterPortfolioHedgerServiceBusClient(serviceBusClient,
-                $"TradingPortfolio",
-                TopicQueueType.PermanentWithSingleConnection,
-                true);
-            
             //Publishers
             builder.RegisterMyServiceBusPublisher<PortfolioTrade>(serviceBusClient, PortfolioTrade.TopicName, true);
             builder.RegisterMyServiceBusPublisher<PortfolioChangeBalance>(serviceBusClient, PortfolioChangeBalance.TopicName, true);

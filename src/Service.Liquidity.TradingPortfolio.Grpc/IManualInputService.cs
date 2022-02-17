@@ -41,5 +41,8 @@ namespace Service.Liquidity.TradingPortfolio.Grpc
         [OperationContract]
         Task<PortfolioResponse> GetPortfolioAsync();
         #endregion
+        
+        [OperationContract]
+        Task<ManualTradeResponse> ReportManualTradeAsync(ReportManualTradeRequest request);
     }
 }
