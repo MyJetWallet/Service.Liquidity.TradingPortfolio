@@ -59,7 +59,17 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             [DataMember(Order = 10)] public decimal NetInternalBalanceInUsd { get; set; }
             [DataMember(Order = 11)] public decimal NetExternalBalance { get; set; }
             [DataMember(Order = 12)] public decimal NetExternalBalanceInUsd { get; set; }
+
+            public decimal GetPositiveNetInUsd()
+            {
+                return NetBalanceInUsd > 0 ? NetBalanceInUsd : 0;
+            }
             
+            public decimal GetNegativeNetInUsd()
+            {
+                return NetBalanceInUsd < 0 ? NetBalanceInUsd : 0;
+            }
+
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
                 if (!WalletBalances.TryGetValue(portfolioWallet.Name, out var walletBalance))

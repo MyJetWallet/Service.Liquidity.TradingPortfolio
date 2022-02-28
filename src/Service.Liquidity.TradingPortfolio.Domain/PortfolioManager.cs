@@ -149,16 +149,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 totalDailyVelocityRiskInUsd =
                     MoneyTools.To2Digits(totalDailyVelocityRiskInUsd + asset.DailyVelocityRiskInUsd);
 
-                if (asset.NetBalanceInUsd < 0)
-                {
-                    totalNegativeNetInUsd = MoneyTools.To2Digits(totalNegativeNetInUsd + asset.NetBalanceInUsd);
-
-                }
-                else
-                {
-                    totalPositiveNetInUsd = MoneyTools.To2Digits(totalPositiveNetInUsd + asset.NetBalanceInUsd);
-                }
-
+                totalNegativeNetInUsd = MoneyTools.To2Digits(totalNegativeNetInUsd + asset.GetNegativeNetInUsd());
+                totalPositiveNetInUsd = MoneyTools.To2Digits(totalPositiveNetInUsd + asset.GetPositiveNetInUsd());
                 totalInternalBalanceInUsd = MoneyTools.To2Digits(totalInternalBalanceInUsd + netInternalBalanceInUsd);
                 totalExternalBalanceInUsd = MoneyTools.To2Digits(totalExternalBalanceInUsd + netExternalBalanceInUsd);
             }
