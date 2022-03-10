@@ -16,7 +16,6 @@ namespace Service.Liquidity.TradingPortfolio.Subscribers
             IPortfolioManager manager
         )
         {
-            subscriber.Subscribe(Handler);
             _subscriber = subscriber;
             _manager = manager;
         }
