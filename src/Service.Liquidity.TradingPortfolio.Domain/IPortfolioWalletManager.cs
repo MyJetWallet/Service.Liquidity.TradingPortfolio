@@ -19,5 +19,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         List<PortfolioWallet> GetWallets();
         PortfolioWallet GetWalletByWalletId(string walletId);
         PortfolioWallet GetWalletByWalletName(string walletName);
+        PortfolioWallet GetWalletByExternalSource(string externalSource);
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using NUnit.Framework;
 using Service.AssetsDictionary.Domain.Models;
 using Service.Liquidity.Converter.Domain.Models;
@@ -33,7 +35,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
             _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
             _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
             _indexAssetDictionaryClientMock = new IndexAssetDictionaryClientMock();
-
+            var loggerMock = Substitute.For<ILogger<PortfolioManager>>();
+            
             _service = new PortfolioManager(new PortfolioWalletManagerMock(),
                     _portfolioPublisherMock,
                     _indexPricesMock,
@@ -42,7 +45,8 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                     _portfolioManualSettelmentMock,
                     _myNoSqlPortfolioWriter,
                     _portfolioChangeBalancePublisherMock,
-                    _indexAssetDictionaryClientMock
+                    _indexAssetDictionaryClientMock,
+                    loggerMock
                     );
             _service.Load();
         }

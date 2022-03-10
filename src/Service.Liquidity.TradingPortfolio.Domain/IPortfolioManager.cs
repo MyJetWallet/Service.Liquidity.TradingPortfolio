@@ -4,6 +4,7 @@ using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Service.Liquidity.Monitoring.Domain.Models.Hedging;
 
 namespace Service.Liquidity.TradingPortfolio.Domain
 {
@@ -19,5 +20,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         Portfolio GetCurrentPortfolio();
         Task SetManualBalanceAsync(string wallet, string asset, decimal balance, string comment, string user);
         Task SetManualSettelmentAsync(PortfolioSettlement settlement);
+        Task ApplyHedgeTradeAsync(HedgeTradeMessage message);
     }
 }

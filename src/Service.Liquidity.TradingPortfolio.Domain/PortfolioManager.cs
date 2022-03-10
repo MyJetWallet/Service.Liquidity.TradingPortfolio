@@ -9,9 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
+using Service.Liquidity.Monitoring.Domain.Models.Hedging;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 using Service.Liquidity.TradingPortfolio.Domain.Utils;
 
@@ -26,6 +28,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private readonly IServiceBusPublisher<PortfolioSettlement> _serviceBusSettementPublisher;
         private readonly IServiceBusPublisher<PortfolioChangeBalance> _serviceBusChangeBalancePublisher;
         private readonly IIndexAssetDictionaryClient _indexAssetDictionaryClient;
+        private readonly ILogger<PortfolioManager> _logger;
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new MyLocker();
@@ -44,7 +47,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             IServiceBusPublisher<PortfolioSettlement> serviceBusSettementPublisher,
             IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter,
             IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher,
-            IIndexAssetDictionaryClient indexAssetDictionaryClient)
+            IIndexAssetDictionaryClient indexAssetDictionaryClient,
+            ILogger<PortfolioManager> logger
+        )
         {
             _portfolioWalletManager = portfolioWalletManager;
             _serviceBusPortfolioPublisher = serviceBusPublisher;
@@ -55,6 +60,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
             _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
             _indexAssetDictionaryClient = indexAssetDictionaryClient;
+            _logger = logger;
         }
 
         public void Load()
@@ -696,6 +702,31 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
 
             await PublishPortfolioSettelmentAsync(settlement);
+            await PublishPortfolioAsync();
+        }
+
+        public async Task ApplyHedgeTradeAsync(HedgeTradeMessage message)
+        {
+            using var locker = await _myLocker.GetLocker();
+            
+            var wallet = _portfolioWalletManager.GetWalletByExternalSource(message.ExchangeName);
+
+            if (wallet == null)
+            {
+                _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@message}", message);
+                return;
+            }
+
+            var baseAsset = _portfolio.GetOrCreateAssetBySymbol(message.BaseAsset);
+            var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
+            baseWalletBalance.Balance += Convert.ToDecimal(message.BaseVolume);
+
+            var quoteAsset = _portfolio.GetOrCreateAssetBySymbol(message.QuoteAsset);
+            var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
+            quoteWalletBalance.Balance += Convert.ToDecimal(message.QuoteVolume);
+            
+            _portfolio.HedgeStamp = message.HedgeStamp;
+
             await PublishPortfolioAsync();
         }
 

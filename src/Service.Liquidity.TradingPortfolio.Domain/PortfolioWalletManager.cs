@@ -147,5 +147,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         {
             return _wallets.Values.ToList();
         }
+        
+        public PortfolioWallet GetWalletByExternalSource(string externalSource)
+        {
+            return _wallets.Values.FirstOrDefault(w => w.ExternalSource == externalSource);
+        }
     }
 }

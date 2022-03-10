@@ -90,6 +90,11 @@ public class PortfolioWalletManagerMock : IPortfolioWalletManager
         throw new NotImplementedException();
     }
 
+    public PortfolioWallet GetWalletByExternalSource(string externalSource)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task DeleteInternalWalletByWalletName(string walletName)
     {
         throw new NotImplementedException();
