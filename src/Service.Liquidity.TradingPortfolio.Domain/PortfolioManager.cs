@@ -716,6 +716,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@message}", message);
                 return;
             }
+            
+            _portfolio.HedgeStamp = message.HedgeStamp;
 
             var baseAsset = _portfolio.GetOrCreateAssetBySymbol(message.BaseAsset);
             var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
@@ -724,8 +726,42 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             var quoteAsset = _portfolio.GetOrCreateAssetBySymbol(message.QuoteAsset);
             var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
             quoteWalletBalance.Balance += Convert.ToDecimal(message.QuoteVolume);
-            
-            _portfolio.HedgeStamp = message.HedgeStamp;
+
+            var (baseIndexPrice, baseVolumeInUsd) =
+                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset,
+                    Convert.ToDecimal(message.BaseVolume));
+
+            var (quoteIndexPrice, quoteVolumeInUsd) =
+                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset,
+                    Convert.ToDecimal(message.QuoteVolume));
+
+            await PublishPortfolioTradesAsync(new List<PortfolioTrade>
+            {
+                new ()
+                {
+                    TradeId = message.Id,
+                    AssociateBrokerId = "jetwallet",
+                    BaseWalletName = wallet.Name,
+                    QuoteWalletName = wallet.Name,
+                    AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
+                    BaseAsset = message.BaseAsset,
+                    QuoteAsset = message.QuoteAsset,
+                    Side = OrderSide.Buy,
+                    Price = message.Price,
+                    BaseVolume = Convert.ToDecimal(message.BaseVolume),
+                    QuoteVolume = Convert.ToDecimal(message.QuoteVolume),
+                    BaseVolumeInUsd = baseVolumeInUsd,
+                    QuoteVolumeInUsd = quoteVolumeInUsd,
+                    BaseAssetPriceInUsd = baseIndexPrice.UsdPrice,
+                    QuoteAssetPriceInUsd = quoteIndexPrice.UsdPrice,
+                    DateTime = DateTime.UtcNow,
+                    Source = "Hedger",
+                    Comment = "Hedge trade",
+                    FeeAsset = "",
+                    FeeVolume = 0,
+                    User = ""
+                }
+            });
 
             await PublishPortfolioAsync();
         }
