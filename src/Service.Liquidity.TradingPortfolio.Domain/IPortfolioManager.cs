@@ -19,7 +19,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         Task SetVelocityLowHighAsync(string asset, decimal lowOpen, decimal highOpen);
         Portfolio GetCurrentPortfolio();
         Task SetManualBalanceAsync(string wallet, string asset, decimal balance, string comment, string user);
-        Task SetManualSettelmentAsync(PortfolioSettlement settlement);
+        Task SetManualSettlementAsync(PortfolioSettlement settlement);
         Task ApplyHedgeOperationAsync(HedgeOperation operation);
     }
 }

@@ -52,7 +52,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioManager.SetManualSettelmentAsync(new PortfolioSettlement
+                await _portfolioManager.SetManualSettlementAsync(new PortfolioSettlement
                 {
                     BrokerId = request.BrokerId,
                     User = request.User,
