@@ -16,16 +16,13 @@ namespace Service.Liquidity.TradingPortfolio.Services
     {
         private readonly IPortfolioWalletManager _portfolioWalletManager;
         private readonly IPortfolioManager _portfolioManager;
-        private readonly IIndexPricesClient _indexPricesClient;
         private readonly ILogger<ManualInputService> _logger;
 
         public ManualInputService(IPortfolioWalletManager portfolioWalletManager,
-            IIndexPricesClient indexPricesClient,
             ILogger<ManualInputService> logger, 
             IPortfolioManager portfolioManager)
         {
             _portfolioWalletManager = portfolioWalletManager;
-            _indexPricesClient = indexPricesClient;
             _logger = logger;
             _portfolioManager = portfolioManager;
         }
