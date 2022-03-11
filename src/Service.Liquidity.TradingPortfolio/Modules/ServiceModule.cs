@@ -1,12 +1,10 @@
 ﻿using Autofac;
-using Autofac.Core;
-using Autofac.Core.Registration;
 using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.ServiceBus;
 using MyServiceBus.Abstractions;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.Liquidity.Converter.Domain.Models;
-using Service.Liquidity.Monitoring.Domain.Models.Hedging;
+using Service.Liquidity.Hedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
@@ -57,8 +55,8 @@ namespace Service.Liquidity.TradingPortfolio.Modules
                 SwapMessage.TopicName,
                 $"TradingPortfolio",
                 TopicQueueType.PermanentWithSingleConnection);
-            builder.RegisterMyServiceBusSubscriberSingle<HedgeTradeMessage>(serviceBusClient,
-                HedgeTradeMessage.SbTopicName,
+            builder.RegisterMyServiceBusSubscriberSingle<HedgeOperation>(serviceBusClient,
+                HedgeOperation.TopicName,
                 $"TradingPortfolio",
                 TopicQueueType.PermanentWithSingleConnection);
 

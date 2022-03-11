@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
-using Service.Liquidity.Monitoring.Domain.Models.Hedging;
+using Service.Liquidity.Hedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 using Service.Liquidity.TradingPortfolio.Domain.Utils;
 
@@ -705,51 +705,49 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
-        public async Task ApplyHedgeTradeAsync(HedgeTradeMessage message)
+        public async Task ApplyHedgeOperationAsync(HedgeOperation operation)
         {
             using var locker = await _myLocker.GetLocker();
-            
-            var wallet = _portfolioWalletManager.GetWalletByExternalSource(message.ExchangeName);
 
-            if (wallet == null)
+            var portfolioTrades = new List<PortfolioTrade>();
+            foreach (var trade in operation.Trades)
             {
-                _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@message}", message);
-                return;
-            }
-            
-            _portfolio.HedgeStamp = message.HedgeStamp;
+                var wallet = _portfolioWalletManager.GetWalletByExternalSource(trade.ExchangeName);
 
-            var baseAsset = _portfolio.GetOrCreateAssetBySymbol(message.BaseAsset);
-            var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
-            baseWalletBalance.Balance += Convert.ToDecimal(message.BaseVolume);
-
-            var quoteAsset = _portfolio.GetOrCreateAssetBySymbol(message.QuoteAsset);
-            var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
-            quoteWalletBalance.Balance += Convert.ToDecimal(message.QuoteVolume);
-
-            var (baseIndexPrice, baseVolumeInUsd) =
-                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset,
-                    Convert.ToDecimal(message.BaseVolume));
-
-            var (quoteIndexPrice, quoteVolumeInUsd) =
-                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset,
-                    Convert.ToDecimal(message.QuoteVolume));
-
-            await PublishPortfolioTradesAsync(new List<PortfolioTrade>
-            {
-                new ()
+                if (wallet == null)
                 {
-                    TradeId = message.Id,
+                    _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@trade}", trade);
+                    return;
+                }
+
+                var baseAsset = _portfolio.GetOrCreateAssetBySymbol(trade.BaseAsset);
+                var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
+                baseWalletBalance.Balance += Convert.ToDecimal(trade.BaseVolume);
+
+                var quoteAsset = _portfolio.GetOrCreateAssetBySymbol(trade.QuoteAsset);
+                var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
+                quoteWalletBalance.Balance += Convert.ToDecimal(trade.QuoteVolume);
+
+                var (baseIndexPrice, baseVolumeInUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(trade.BaseAsset,
+                        Convert.ToDecimal(trade.BaseVolume));
+                var (quoteIndexPrice, quoteVolumeInUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(trade.QuoteAsset,
+                        Convert.ToDecimal(trade.QuoteVolume));
+                
+                portfolioTrades.Add(new ()
+                {
+                    TradeId = trade.Id,
                     AssociateBrokerId = "jetwallet",
                     BaseWalletName = wallet.Name,
                     QuoteWalletName = wallet.Name,
-                    AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
-                    BaseAsset = message.BaseAsset,
-                    QuoteAsset = message.QuoteAsset,
+                    AssociateSymbol = trade.BaseAsset + "|" + trade.QuoteAsset,
+                    BaseAsset = trade.BaseAsset,
+                    QuoteAsset = trade.QuoteAsset,
                     Side = OrderSide.Buy,
-                    Price = message.Price,
-                    BaseVolume = Convert.ToDecimal(message.BaseVolume),
-                    QuoteVolume = Convert.ToDecimal(message.QuoteVolume),
+                    Price = trade.Price,
+                    BaseVolume = Convert.ToDecimal(trade.BaseVolume),
+                    QuoteVolume = Convert.ToDecimal(trade.QuoteVolume),
                     BaseVolumeInUsd = baseVolumeInUsd,
                     QuoteVolumeInUsd = quoteVolumeInUsd,
                     BaseAssetPriceInUsd = baseIndexPrice.UsdPrice,
@@ -760,9 +758,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     FeeAsset = "",
                     FeeVolume = 0,
                     User = ""
-                }
-            });
+                });
+            }
+            
+            _portfolio.HedgeOperationId = operation.Id;
 
+            await PublishPortfolioTradesAsync(portfolioTrades);
             await PublishPortfolioAsync();
         }
 

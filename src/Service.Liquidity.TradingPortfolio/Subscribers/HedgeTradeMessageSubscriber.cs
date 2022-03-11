@@ -1,18 +1,18 @@
 ﻿using System.Threading.Tasks;
 using Autofac;
 using DotNetCoreDecorators;
-using Service.Liquidity.Monitoring.Domain.Models.Hedging;
+using Service.Liquidity.Hedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {
     public class HedgeTradeMessageSubscriber : IStartable
     {
-        private readonly ISubscriber<HedgeTradeMessage> _subscriber;
+        private readonly ISubscriber<HedgeOperation> _subscriber;
         private readonly IPortfolioManager _manager;
 
         public HedgeTradeMessageSubscriber(
-            ISubscriber<HedgeTradeMessage> subscriber,
+            ISubscriber<HedgeOperation> subscriber,
             IPortfolioManager manager
         )
         {
@@ -25,9 +25,9 @@ namespace Service.Liquidity.TradingPortfolio.Subscribers
             _subscriber.Subscribe(Handle);
         }
 
-        private async ValueTask Handle(HedgeTradeMessage message)
+        private async ValueTask Handle(HedgeOperation operation)
         {
-            await _manager.ApplyHedgeTradeAsync(message);
+            await _manager.ApplyHedgeOperationAsync(operation);
         }
     }
 }
