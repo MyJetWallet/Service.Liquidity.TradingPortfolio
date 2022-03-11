@@ -397,63 +397,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await PublishPortfolioAsync();
         }
 
-        public async Task ApplyTradesAsync(IReadOnlyList<TradeMessage> messages)
-        {
-            using var locker = await _myLocker.GetLocker();
-
-            var portfolioTrades = new List<PortfolioTrade>();
-            foreach (var message in messages)
-            {
-                if (!ApplyTradeItem(
-                        message.AssociateWalletId,
-                        message.BaseAsset,
-                        message.Volume,
-                        message.QuoteAsset,
-                        message.OppositeVolume,
-                        message.FeeAsset,
-                        message.FeeVolume))
-                {
-                    continue;
-                }
-
-                var (asset1IndexPrice, volume1InUsd) =
-                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset,
-                        Convert.ToDecimal(message.Volume));
-                var (asset2IndexPrice, volume2InUsd) =
-                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset,
-                        Convert.ToDecimal(message.OppositeVolume));
-
-                var portfolioTrade = new PortfolioTrade()
-                {
-                    TradeId = message.Id,
-                    AssociateBrokerId = message.AssociateBrokerId,
-                    BaseWalletName = message.AssociateWalletId,
-                    QuoteWalletName = message.AssociateWalletId,
-                    AssociateSymbol = message.BaseAsset + "|" + message.QuoteAsset,
-                    BaseAsset = message.BaseAsset,
-                    QuoteAsset = message.QuoteAsset,
-                    Side = message.Side,
-                    Price = message.Price,
-                    BaseVolume = Convert.ToDecimal(message.Volume),
-                    QuoteVolume = Convert.ToDecimal(message.OppositeVolume),
-                    BaseVolumeInUsd = volume1InUsd,
-                    QuoteVolumeInUsd = volume2InUsd,
-                    BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
-                    QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
-                    DateTime = DateTime.UtcNow,
-                    Source = message.Source,
-                    Comment = message.Comment,
-                    FeeAsset = message.FeeAsset,
-                    FeeVolume = Convert.ToDecimal(message.FeeVolume),
-                    User = message.User
-                };
-                portfolioTrades.Add(portfolioTrade);
-            }
-
-            await PublishTradesAsync(portfolioTrades);
-            await PublishPortfolioAsync();
-        }
-
         public async Task ApplyTradeAsync(TradeMessage message)
         {
             using var locker = await _myLocker.GetLocker();
@@ -574,20 +517,6 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private async Task PublishPortfolioChangeBalanceAsync(PortfolioChangeBalance portfolioChangeBalance)
         {
             await _serviceBusChangeBalancePublisher.PublishAsync(portfolioChangeBalance);
-        }
-
-        public async Task SetDailyVelocityAsync(string asset, decimal velocity)
-        {
-            using var locker = await _myLocker.GetLocker();
-
-            var portfolioAsset = _portfolio.GetAssetBySymbol(asset);
-            if (portfolioAsset != null)
-            {
-                portfolioAsset.DailyVelocityLowOpen = velocity;
-                portfolioAsset.DailyVelocityHighOpen = velocity;
-            }
-
-            await PublishPortfolioAsync();
         }
 
         public async Task SetVelocityLowHighAsync(string asset, decimal lowOpen, decimal highOpen)
