@@ -7,12 +7,12 @@ using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {
-    public class HedgeTradeMessageSubscriber : IStartable
+    public class HedgeOperationsSubscriber : IStartable
     {
         private readonly ISubscriber<HedgeOperation> _subscriber;
         private readonly IPortfolioManager _manager;
 
-        public HedgeTradeMessageSubscriber(
+        public HedgeOperationsSubscriber(
             ISubscriber<HedgeOperation> subscriber,
             IPortfolioManager manager
         )

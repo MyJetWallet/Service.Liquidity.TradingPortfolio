@@ -44,7 +44,7 @@ namespace Service.Liquidity.TradingPortfolio.Modules
         {
             builder.RegisterType<FeeShareMessageSubscriber>().As<IStartable>().SingleInstance().AutoActivate();
             builder.RegisterType<SwapMessageSubscriber>().As<IStartable>().SingleInstance().AutoActivate();
-            builder.RegisterType<HedgeTradeMessageSubscriber>().As<IStartable>().SingleInstance().AutoActivate();
+            builder.RegisterType<HedgeOperationsSubscriber>().As<IStartable>().SingleInstance().AutoActivate();
         }
 
         private static void RegisterServiceBus(ContainerBuilder builder)
