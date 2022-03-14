@@ -6,8 +6,10 @@ using Service.FeeShareEngine.Domain.Models.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.Hedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
+using Service.Liquidity.TradingPortfolio.Domain.Services;
 using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Services;
 using Service.Liquidity.TradingPortfolio.Subscribers;
@@ -26,6 +28,8 @@ namespace Service.Liquidity.TradingPortfolio.Modules
             builder.RegisterType<PortfolioWalletManager>().SingleInstance().As<IPortfolioWalletManager>().AutoActivate()
                 .AsSelf();
             builder.RegisterType<ManualInputService>().As<IManualInputService>();
+            builder.RegisterType<PortfolioWalletsNoSqlStorage>().As<IPortfolioWalletsStorage>()
+                .SingleInstance().AutoActivate();
 
             //MyNoSql
             builder.RegisterMyNoSqlWriter<PortfolioWalletNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),

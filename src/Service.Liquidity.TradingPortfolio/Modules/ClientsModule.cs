@@ -11,9 +11,6 @@ namespace Service.Liquidity.TradingPortfolio.Modules
         {
             var myNoSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
             builder.RegisterIndexAssetClients(myNoSqlClient);
-            //builder.RegisterBaseCurrencyConverterClient(Program.Settings.BaseCurrencyConverterGrpcServiceUrl, myNoSqlClient);
-            //builder.RegisterCurrentPricesClient(myNoSqlClient);
-            // $ для каждого актива
             builder.RegisterIndexPricesClient(myNoSqlClient);
         }
     }
