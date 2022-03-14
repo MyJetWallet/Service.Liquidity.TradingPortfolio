@@ -30,7 +30,9 @@ namespace Service.Liquidity.TradingPortfolio.Modules
             builder.RegisterType<ManualInputService>().As<IManualInputService>();
             builder.RegisterType<PortfolioWalletsNoSqlStorage>().As<IPortfolioWalletsStorage>()
                 .SingleInstance().AutoActivate();
-
+            builder.RegisterType<EventsPublisher>().As<IEventsPublisher>()
+                .SingleInstance().AutoActivate();
+            
             //MyNoSql
             builder.RegisterMyNoSqlWriter<PortfolioWalletNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
                 PortfolioWalletNoSql.TableName);

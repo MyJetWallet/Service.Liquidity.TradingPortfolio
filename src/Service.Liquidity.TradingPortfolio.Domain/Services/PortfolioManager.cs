@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain;
 using MyJetWallet.Domain.Orders;
 using MyJetWallet.Sdk.Service.Tools;
-using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
 using Service.FeeShareEngine.Domain.Models.Models;
@@ -23,13 +22,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
     public class PortfolioManager : IPortfolioManager
     {
         private readonly IPortfolioWalletManager _portfolioWalletManager;
-        private readonly IServiceBusPublisher<Portfolio> _serviceBusPortfolioPublisher;
-        private readonly IServiceBusPublisher<PortfolioFeeShare> _serviceBusFeeSharePublisher;
-        private readonly IServiceBusPublisher<PortfolioTrade> _serviceBusTradePublisher;
-        private readonly IServiceBusPublisher<PortfolioSettlement> _serviceBusSettlementPublisher;
-        private readonly IServiceBusPublisher<PortfolioChangeBalance> _serviceBusChangeBalancePublisher;
         private readonly IIndexAssetDictionaryClient _indexAssetDictionaryClient;
         private readonly ILogger<PortfolioManager> _logger;
+        private readonly IEventsPublisher _eventsPublisher;
         private readonly IMyNoSqlServerDataWriter<PortfolioNoSql> _myNoSqlPortfolioWriter;
         private readonly IIndexPricesClient _indexPricesClient;
         private readonly MyLocker _myLocker = new();
@@ -39,27 +34,19 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
         };
 
         public PortfolioManager(IPortfolioWalletManager portfolioWalletManager,
-            IServiceBusPublisher<Portfolio> serviceBusPublisher,
             IIndexPricesClient indexPricesClient,
-            IServiceBusPublisher<PortfolioFeeShare> serviceBusFeeSharePublisher,
-            IServiceBusPublisher<PortfolioTrade> serviceBusTradePublisher,
-            IServiceBusPublisher<PortfolioSettlement> serviceBusSettlementPublisher,
             IMyNoSqlServerDataWriter<PortfolioNoSql> myNoSqlPortfolioWriter,
-            IServiceBusPublisher<PortfolioChangeBalance> serviceBusChangeBalancePublisher,
             IIndexAssetDictionaryClient indexAssetDictionaryClient,
-            ILogger<PortfolioManager> logger
+            ILogger<PortfolioManager> logger,
+            IEventsPublisher eventsPublisher
         )
         {
             _portfolioWalletManager = portfolioWalletManager;
-            _serviceBusPortfolioPublisher = serviceBusPublisher;
             _indexPricesClient = indexPricesClient;
-            _serviceBusFeeSharePublisher = serviceBusFeeSharePublisher;
-            _serviceBusTradePublisher = serviceBusTradePublisher;
-            _serviceBusSettlementPublisher = serviceBusSettlementPublisher;
             _myNoSqlPortfolioWriter = myNoSqlPortfolioWriter;
-            _serviceBusChangeBalancePublisher = serviceBusChangeBalancePublisher;
             _indexAssetDictionaryClient = indexAssetDictionaryClient;
             _logger = logger;
+            _eventsPublisher = eventsPublisher;
         }
 
         public void Load()
@@ -173,7 +160,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
         {
             CalculatePortfolio();
             await _myNoSqlPortfolioWriter.InsertOrReplaceAsync(PortfolioNoSql.Create(_cachedPortfolio));
-            await _serviceBusPortfolioPublisher.PublishAsync(_cachedPortfolio);
+            await _eventsPublisher.PublishAsync(_cachedPortfolio);
         }
 
         private bool ApplySwapItem(string walletId1, string assetId1, decimal volume1,
@@ -382,7 +369,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 portfolioTrades.Add(portfolioTrade);
             }
 
-            await _serviceBusTradePublisher.PublishAsync(portfolioTrades);
+            await _eventsPublisher.PublishAsync(portfolioTrades);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
 
@@ -436,7 +423,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
             };
             portfolioTrades.Add(portfolioTrade);
 
-            await _serviceBusTradePublisher.PublishAsync(portfolioTrades);
+            await _eventsPublisher.PublishAsync(portfolioTrades);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
 
@@ -467,7 +454,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 SettlementDate = DateTime.UtcNow,
             };
 
-            await _serviceBusFeeSharePublisher.PublishAsync(portfolioFeeShare);
+            await _eventsPublisher.PublishAsync(portfolioFeeShare);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
 
@@ -499,7 +486,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 BalanceBeforeUpdate = oldBalance
             };
 
-            await _serviceBusChangeBalancePublisher.PublishAsync(portfolioChangeBalance);
+            await _eventsPublisher.PublishAsync(portfolioChangeBalance);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
 
@@ -530,7 +517,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 return;
             }
 
-            await _serviceBusSettlementPublisher.PublishAsync(settlement);
+            await _eventsPublisher.PublishAsync(settlement);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
 
@@ -592,7 +579,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
 
             _cachedPortfolio.HedgeOperationId = operation.Id;
 
-            await _serviceBusTradePublisher.PublishAsync(portfolioTrades);
+            await _eventsPublisher.PublishAsync(portfolioTrades);
             await RecalculateAndSaveAndPublishPortfolioAsync();
         }
     }

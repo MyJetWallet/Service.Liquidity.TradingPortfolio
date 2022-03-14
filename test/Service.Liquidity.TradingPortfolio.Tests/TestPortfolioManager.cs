@@ -8,6 +8,8 @@ using NUnit.Framework;
 using Service.AssetsDictionary.Domain.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Services;
 
 namespace Service.Liquidity.TradingPortfolio.Tests
@@ -17,51 +19,42 @@ namespace Service.Liquidity.TradingPortfolio.Tests
         public PortfolioManager _service;
         public PortfolioPublisherMock _portfolioPublisherMock;
         public IndexPricesMock _indexPricesMock;
-        public PortfolioFeeSharePublisherMock _portfolioFeeSharePublisherMock;
-        public PortfolioTraderPublisherMock _portfolioTraderPublisherMock;
-        private PortfolioManualSettlementPublisherMock _portfolioManualSettelmentMock;
         private PortfolioMyNoSqlWriterMock _myNoSqlPortfolioWriter;
-        public PortfolioChangeBalancePublisherMock _portfolioChangeBalancePublisherMock;
         public IndexAssetDictionaryClientMock _indexAssetDictionaryClientMock;
 
         [SetUp]
         public void Setup()
         {
-
-            _portfolioPublisherMock = new PortfolioPublisherMock();
             _indexPricesMock = new IndexPricesMock();
-            _portfolioFeeSharePublisherMock = new PortfolioFeeSharePublisherMock();
-            _portfolioTraderPublisherMock = new PortfolioTraderPublisherMock();
-            _portfolioManualSettelmentMock = new PortfolioManualSettlementPublisherMock();
             _myNoSqlPortfolioWriter = new PortfolioMyNoSqlWriterMock();
-            _portfolioChangeBalancePublisherMock = new PortfolioChangeBalancePublisherMock();
             _indexAssetDictionaryClientMock = new IndexAssetDictionaryClientMock();
-            var loggerMock = Substitute.For<ILogger<PortfolioManager>>();
-            
-            _service = new PortfolioManager(new PortfolioWalletManagerMock(),
-                    _portfolioPublisherMock,
-                    _indexPricesMock,
-                    _portfolioFeeSharePublisherMock,
-                    _portfolioTraderPublisherMock,
-                    _portfolioManualSettelmentMock,
-                    _myNoSqlPortfolioWriter,
-                    _portfolioChangeBalancePublisherMock,
-                    _indexAssetDictionaryClientMock,
-                    loggerMock
-                    );
+            _portfolioPublisherMock = new PortfolioPublisherMock();
+
+            _service = new PortfolioManager(
+                new PortfolioWalletManagerMock(),
+                _indexPricesMock,
+                _myNoSqlPortfolioWriter,
+                _indexAssetDictionaryClientMock,
+                Substitute.For<ILogger<PortfolioManager>>(),
+                Substitute.For<IEventsPublisher>()
+            );
             _service.Load();
         }
 
         [Test]
         public async Task ApplyClientToBrokerSwap()
         {
-            var messageCount = 0;
-            _portfolioPublisherMock.Callback = message =>
-            {
-                messageCount++;
-            };
+            var eventsPublisher = Substitute.For<IEventsPublisher>();
+            var service = new PortfolioManager(
+                new PortfolioWalletManagerMock(),
+                _indexPricesMock,
+                _myNoSqlPortfolioWriter,
+                _indexAssetDictionaryClientMock,
+                Substitute.For<ILogger<PortfolioManager>>(),
+                eventsPublisher
+            );
 
-            var swaps = new SwapMessage()
+            var swaps = new SwapMessage
             {
                 AccountId1 = "User 1",
                 AccountId2 = "Broker",
@@ -79,18 +72,18 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 DifferenceVolumeAbs = 50m,
             };
 
-            await _service.ApplySwapsAsync(new[] { swaps });
-            var portfolio = _service.GetCurrentPortfolio();
+            await service.ApplySwapsAsync(new[] { swaps });
+            var portfolio = service.GetCurrentPortfolio();
 
             portfolio.Assets["BTC"].WalletBalances["Converter"].Balance.Should().Be(1m);
             portfolio.Assets["USD"].WalletBalances["Converter"].Balance.Should().Be(-50000m);
-            messageCount.Should().Be(1);
+            eventsPublisher.Received(1);
         }
 
         [Test]
         public async Task ApplyClientToClientSwap()
         {
-            var swaps = new SwapMessage()
+            var swaps = new SwapMessage
             {
                 AccountId1 = "User 1",
                 AccountId2 = "User 2",
