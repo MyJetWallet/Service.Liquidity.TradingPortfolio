@@ -18,9 +18,11 @@ namespace Service.Liquidity.TradingPortfolio.Services
         private readonly IPortfolioManager _portfolioManager;
         private readonly ILogger<ManualInputService> _logger;
 
-        public ManualInputService(IPortfolioWalletManager portfolioWalletManager,
+        public ManualInputService(
+            IPortfolioWalletManager portfolioWalletManager,
             ILogger<ManualInputService> logger, 
-            IPortfolioManager portfolioManager)
+            IPortfolioManager portfolioManager
+            )
         {
             _portfolioWalletManager = portfolioWalletManager;
             _logger = logger;
