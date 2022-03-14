@@ -17,4 +17,8 @@
     <ProjectReference Include="..\Service.Liquidity.TradingPortfolio.Domain.Models\Service.Liquidity.TradingPortfolio.Domain.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Services\PortfolioWalletsMemoryCache.cs" />
+  </ItemGroup>
+
 </Project>
