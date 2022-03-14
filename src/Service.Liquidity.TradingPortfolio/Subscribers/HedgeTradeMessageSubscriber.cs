@@ -3,6 +3,7 @@ using Autofac;
 using DotNetCoreDecorators;
 using Service.Liquidity.Hedger.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {

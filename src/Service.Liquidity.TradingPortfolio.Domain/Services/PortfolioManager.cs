@@ -1,23 +1,24 @@
-﻿using MyJetWallet.Domain.Orders;
-using MyJetWallet.Sdk.Service.Tools;
-using MyJetWallet.Sdk.ServiceBus;
-using Service.FeeShareEngine.Domain.Models.Models;
-using Service.IndexPrices.Client;
-using Service.Liquidity.Converter.Domain.Models;
-using Service.Liquidity.TradingPortfolio.Domain.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Domain;
+using MyJetWallet.Domain.Orders;
+using MyJetWallet.Sdk.Service.Tools;
+using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
+using Service.FeeShareEngine.Domain.Models.Models;
+using Service.IndexPrices.Client;
+using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.Hedger.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 using Service.Liquidity.TradingPortfolio.Domain.Utils;
 
-namespace Service.Liquidity.TradingPortfolio.Domain
+namespace Service.Liquidity.TradingPortfolio.Domain.Services
 {
     public class PortfolioManager : IPortfolioManager
     {

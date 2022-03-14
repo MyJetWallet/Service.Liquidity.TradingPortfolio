@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Autofac;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {

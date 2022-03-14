@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.FeeShareEngine.Domain.Models.Models;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 
 namespace Service.Liquidity.TradingPortfolio.Subscribers
 {

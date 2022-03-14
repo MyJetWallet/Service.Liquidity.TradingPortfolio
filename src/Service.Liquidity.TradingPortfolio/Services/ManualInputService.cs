@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MyJetWallet.Domain.Orders;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 
 namespace Service.Liquidity.TradingPortfolio.Services

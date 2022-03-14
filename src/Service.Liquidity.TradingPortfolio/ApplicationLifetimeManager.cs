@@ -4,6 +4,7 @@ using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyJetWallet.Sdk.ServiceBus;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Services;
 
 namespace Service.Liquidity.TradingPortfolio
 {

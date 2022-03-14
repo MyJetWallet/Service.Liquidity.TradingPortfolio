@@ -1,8 +1,8 @@
-﻿using Service.Liquidity.TradingPortfolio.Domain.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 
-namespace Service.Liquidity.TradingPortfolio.Domain
+namespace Service.Liquidity.TradingPortfolio.Domain.Interfaces
 {
     public interface IPortfolioWalletManager
     {

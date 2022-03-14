@@ -8,6 +8,7 @@ using NUnit.Framework;
 using Service.AssetsDictionary.Domain.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Services;
 
 namespace Service.Liquidity.TradingPortfolio.Tests
 {

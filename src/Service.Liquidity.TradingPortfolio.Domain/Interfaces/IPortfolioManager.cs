@@ -1,11 +1,11 @@
-﻿using Service.FeeShareEngine.Domain.Models.Models;
-using Service.Liquidity.Converter.Domain.Models;
-using Service.Liquidity.TradingPortfolio.Domain.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Service.FeeShareEngine.Domain.Models.Models;
+using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.Hedger.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Domain.Models;
 
-namespace Service.Liquidity.TradingPortfolio.Domain
+namespace Service.Liquidity.TradingPortfolio.Domain.Interfaces
 {
     public interface IPortfolioManager
     {

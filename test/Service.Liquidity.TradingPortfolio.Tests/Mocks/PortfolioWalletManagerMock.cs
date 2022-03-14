@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Service.Liquidity.TradingPortfolio.Domain;
+using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 
 namespace Service.Liquidity.TradingPortfolio.Tests;
