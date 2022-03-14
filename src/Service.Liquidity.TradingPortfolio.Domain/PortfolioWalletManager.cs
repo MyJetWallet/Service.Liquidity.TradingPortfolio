@@ -24,7 +24,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             _wallets = data.Select(e => e).ToDictionary(e => e.Name);
         }
 
-        public async Task AddExternalWallet(string walletName, string brokerId, string sourceName)
+        public async Task AddExternalAsync(string walletName, string brokerId, string sourceName)
         {
             var portfolioWallet = new PortfolioWallet
             {
@@ -37,9 +37,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await _portfolioWalletsStorage.AddOrUpdateAsync(portfolioWallet);
         }
 
-        public async Task AddInternalWallet(string walletId, string brokerId, string walletName)
+        public async Task AddInternalAsync(string walletId, string brokerId, string walletName)
         {
-            var portfolioWallet = new PortfolioWallet()
+            var portfolioWallet = new PortfolioWallet
             {
                 IsInternal = true,
                 ExternalSource = null,
@@ -51,7 +51,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             await _portfolioWalletsStorage.AddOrUpdateAsync(portfolioWallet);
         }
 
-        public PortfolioWallet GetExternalWalletByWalletName(string walletName)
+        public PortfolioWallet GetExternalByName(string walletName)
         {
             if (!_wallets.TryGetValue(walletName, out var wallet))
             {
@@ -62,7 +62,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
 
         public PortfolioWallet GetExternalWalletByWalletId(string walletId)
         {
-            var wallet = GetWalletByWalletId(walletId);
+            var wallet = GetById(walletId);
             if (wallet == null)
             {
                 return null;
@@ -81,9 +81,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return wallet.IsInternal ? wallet : null;
         }
 
-        public PortfolioWallet GetInternalWalletByWalletId(string walletId)
+        public PortfolioWallet GetInternalById(string walletId)
         {
-            var wallet = GetWalletByWalletId(walletId);
+            var wallet = GetById(walletId);
             if (wallet == null)
             {
                 return null;
@@ -91,7 +91,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return wallet.IsInternal ? wallet : null;
         }
 
-        public PortfolioWallet GetWalletByWalletId(string walletId)
+        public PortfolioWallet GetById(string walletId)
         {
             foreach (var wallet in _wallets.Values)
             {
@@ -101,7 +101,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return null;
         }
 
-        public PortfolioWallet GetWalletByWalletName(string walletName)
+        public PortfolioWallet GetByName(string walletName)
         {
             if (!_wallets.TryGetValue(walletName, out var wallet))
             {
@@ -111,7 +111,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             return wallet;
         }
 
-        public async Task DeleteInternalWalletByWalletName(string walletName)
+        public async Task DeleteInternalByNameAsync(string walletName)
         {
             if (!_wallets.TryGetValue(walletName, out var wallet))
             {
@@ -125,7 +125,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
         }
 
-        public async Task DeleteExternalWalletByWalletName(string walletName)
+        public async Task DeleteExternalByNameAsync(string walletName)
         {
             if (!_wallets.TryGetValue(walletName, out var wallet))
             {
@@ -139,12 +139,12 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             }
         }
 
-        public List<PortfolioWallet> GetWallets()
+        public List<PortfolioWallet> Get()
         {
             return _wallets.Values.ToList();
         }
         
-        public PortfolioWallet GetWalletByExternalSource(string externalSource)
+        public PortfolioWallet GetByExternalSource(string externalSource)
         {
             return _wallets.Values.FirstOrDefault(w => w.ExternalSource == externalSource);
         }

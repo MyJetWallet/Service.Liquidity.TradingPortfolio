@@ -33,7 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                _portfolioWalletManager.AddExternalWallet(request.WalletName, request.BrokerId, request.Source);
+                _portfolioWalletManager.AddExternalAsync(request.WalletName, request.BrokerId, request.Source);
                 return Task.FromResult(new WalletResponse()
                 {
                     ErrorMessage = string.Empty,
@@ -87,7 +87,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         public async Task<WalletResponse> AddInternalWalletAsync(WalletAddRequest request)
         {
             try
-            {   await _portfolioWalletManager.AddInternalWallet(request.WalletId, request.BrokerId, request.WalletName);
+            {   await _portfolioWalletManager.AddInternalAsync(request.WalletId, request.BrokerId, request.WalletName);
                 return new WalletResponse()
                 {
                     ErrorMessage = string.Empty,
@@ -108,7 +108,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioWalletManager.DeleteExternalWalletByWalletName(request.WalletId);
+                await _portfolioWalletManager.DeleteExternalByNameAsync(request.WalletId);
                 return new WalletResponse()
                 {
                     ErrorMessage = string.Empty,
@@ -129,7 +129,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {
-                await _portfolioWalletManager.DeleteInternalWalletByWalletName(request.WalletId);
+                await _portfolioWalletManager.DeleteInternalByNameAsync(request.WalletId);
                 return new WalletResponse()
                 {
                     ErrorMessage = string.Empty,
@@ -158,7 +158,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             return Task.FromResult(new GetWalletsResponse()
             {
-                Wallets = _portfolioWalletManager.GetWallets()
+                Wallets = _portfolioWalletManager.Get()
             });
 
         }

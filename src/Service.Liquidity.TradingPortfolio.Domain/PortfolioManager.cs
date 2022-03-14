@@ -191,7 +191,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             string walletId2, string assetId2, decimal volume2, string brokerId)
         {
             var retval = false;
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId1);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalById(walletId1);
 
             if (basePortfolioWallet != null)
             {
@@ -200,7 +200,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 retval = true;
             }
 
-            var quotePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId2);
+            var quotePortfolioWallet = _portfolioWalletManager.GetInternalById(walletId2);
 
             if (quotePortfolioWallet != null)
             {
@@ -237,7 +237,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
         private bool ApplyFeeItem(string walletId, string assetId, decimal volume, string brokerId)
         {
             var retval = false;
-            var basePortfolioWallet = _portfolioWalletManager.GetInternalWalletByWalletId(walletId);
+            var basePortfolioWallet = _portfolioWalletManager.GetInternalById(walletId);
             if (basePortfolioWallet != null)
             {
                 // asset 1
@@ -272,7 +272,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 retval = true;
             }
 
-            var baseExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId1);
+            var baseExPortfolioWallet = _portfolioWalletManager.GetExternalByName(walletId1);
             if (baseExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -281,7 +281,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 retval = true;
             }
 
-            var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId2);
+            var quoteExPortfolioWallet = _portfolioWalletManager.GetExternalByName(walletId2);
             if (quoteExPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId);
@@ -315,7 +315,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                 retval = true;
             }
 
-            var externalPortfolioWallet = _portfolioWalletManager.GetExternalWalletByWalletName(walletId);
+            var externalPortfolioWallet = _portfolioWalletManager.GetExternalByName(walletId);
             if (externalPortfolioWallet != null)
             {
                 var asset1 = _portfolio.GetOrCreateAssetBySymbol(assetId1);
@@ -363,8 +363,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain
                     _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.AssetId2,
                         Convert.ToDecimal(message.Volume2));
 
-                var baseWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId1);
-                var quoteWallet = _portfolioWalletManager.GetInternalWalletByWalletId(message.WalletId2);
+                var baseWallet = _portfolioWalletManager.GetInternalById(message.WalletId1);
+                var quoteWallet = _portfolioWalletManager.GetInternalById(message.WalletId2);
 
                 var portfolioTrade = new PortfolioTrade
                 {
@@ -488,7 +488,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             using var locker = await _myLocker.GetLocker();
 
             var portfolioAsset = _portfolio.GetOrCreateAssetBySymbol(asset);
-            var portfolioWallet = _portfolioWalletManager.GetWalletByWalletName(wallet);
+            var portfolioWallet = _portfolioWalletManager.GetByName(wallet);
             if (portfolioWallet == null)
             {
                 throw new Exception($"Can't find portfolio wallet: {wallet}");
@@ -557,7 +557,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain
             var portfolioTrades = new List<PortfolioTrade>();
             foreach (var trade in operation.Trades)
             {
-                var wallet = _portfolioWalletManager.GetWalletByExternalSource(trade.ExchangeName);
+                var wallet = _portfolioWalletManager.GetByExternalSource(trade.ExchangeName);
 
                 if (wallet == null)
                 {

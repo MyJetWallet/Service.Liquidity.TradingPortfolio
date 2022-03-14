@@ -8,7 +8,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests;
 
 public class PortfolioWalletManagerMock : IPortfolioWalletManager
 {
-    public PortfolioWallet GetExternalWalletByWalletName(string walletName)
+    public PortfolioWallet GetExternalByName(string walletName)
     {
         if (walletName == "Converter")
             return new Domain.Models.PortfolioWallet()
@@ -58,7 +58,7 @@ public class PortfolioWalletManagerMock : IPortfolioWalletManager
         return null;
     }
 
-    public PortfolioWallet GetInternalWalletByWalletId(string walletId)
+    public PortfolioWallet GetInternalById(string walletId)
     {
         if (walletId == "SP-Broker")
             return new Domain.Models.PortfolioWallet()
@@ -80,42 +80,42 @@ public class PortfolioWalletManagerMock : IPortfolioWalletManager
         return null;
     }
 
-    public PortfolioWallet GetWalletByWalletId(string walletId)
+    public PortfolioWallet GetById(string walletId)
     {
         throw new NotImplementedException();
     }
 
-    public PortfolioWallet GetWalletByWalletName(string walletName)
+    public PortfolioWallet GetByName(string walletName)
     {
         throw new NotImplementedException();
     }
 
-    public PortfolioWallet GetWalletByExternalSource(string externalSource)
+    public PortfolioWallet GetByExternalSource(string externalSource)
     {
         throw new NotImplementedException();
     }
 
-    public Task DeleteInternalWalletByWalletName(string walletName)
+    public Task DeleteInternalByNameAsync(string walletName)
     {
         throw new NotImplementedException();
     }
 
-    public Task DeleteExternalWalletByWalletName(string walletName)
+    public Task DeleteExternalByNameAsync(string walletName)
     {
         throw new NotImplementedException();
     }
 
-    public List<PortfolioWallet> GetWallets()
+    public List<PortfolioWallet> Get()
     {
         throw new NotImplementedException();
     }
 
-    Task IPortfolioWalletManager.AddExternalWallet(string walletName, string brokerId, string sourceName)
+    Task IPortfolioWalletManager.AddExternalAsync(string walletName, string brokerId, string sourceName)
     {
         throw new NotImplementedException();
     }
 
-    Task IPortfolioWalletManager.AddInternalWallet(string walletId, string brokerId, string walletName)
+    Task IPortfolioWalletManager.AddInternalAsync(string walletId, string brokerId, string walletName)
     {
         throw new NotImplementedException();
     }

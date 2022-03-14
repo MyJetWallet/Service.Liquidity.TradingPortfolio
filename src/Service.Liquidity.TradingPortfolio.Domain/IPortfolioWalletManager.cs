@@ -7,18 +7,18 @@ namespace Service.Liquidity.TradingPortfolio.Domain
     public interface IPortfolioWalletManager
     {
         PortfolioWallet GetInternalWalletByWalletName(string walletName);
-        PortfolioWallet GetInternalWalletByWalletId(string walletId);
-        Task AddInternalWallet(string walletId, string brokerId, string walletName);
-        Task DeleteInternalWalletByWalletName(string walletName);
+        PortfolioWallet GetInternalById(string walletId);
+        Task AddInternalAsync(string walletId, string brokerId, string walletName);
+        Task DeleteInternalByNameAsync(string walletName);
 
-        PortfolioWallet GetExternalWalletByWalletName(string walletName);
+        PortfolioWallet GetExternalByName(string walletName);
         PortfolioWallet GetExternalWalletByWalletId(string walletId);
-        Task AddExternalWallet(string walletName, string brokerId, string sourceName);
-        Task DeleteExternalWalletByWalletName(string walletName);
+        Task AddExternalAsync(string walletName, string brokerId, string sourceName);
+        Task DeleteExternalByNameAsync(string walletName);
 
-        List<PortfolioWallet> GetWallets();
-        PortfolioWallet GetWalletByWalletId(string walletId);
-        PortfolioWallet GetWalletByWalletName(string walletName);
-        PortfolioWallet GetWalletByExternalSource(string externalSource);
+        List<PortfolioWallet> Get();
+        PortfolioWallet GetById(string walletId);
+        PortfolioWallet GetByName(string walletName);
+        PortfolioWallet GetByExternalSource(string externalSource);
     }
 }
