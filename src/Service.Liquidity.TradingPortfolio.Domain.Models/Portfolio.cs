@@ -73,13 +73,15 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
 
             public WalletBalance GetOrCreateWalletBalance(PortfolioWallet portfolioWallet)
             {
+                WalletBalances ??= new Dictionary<string, WalletBalance>();
+                
                 if (!WalletBalances.TryGetValue(portfolioWallet.Name, out var walletBalance))
                 {
-                    walletBalance = new Portfolio.WalletBalance()
+                    walletBalance = new WalletBalance
                     {
                         Balance = 0m,
                         BalanceInUsd = 0m,
-                        Wallet = new PortfolioWallet()
+                        Wallet = new PortfolioWallet
                         {
                             Name = portfolioWallet.Name,
                             BrokerId = portfolioWallet.BrokerId,
@@ -90,6 +92,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
                     };
                     WalletBalances[portfolioWallet.Name] = walletBalance;
                 }
+                
                 return walletBalance;
             }
 
