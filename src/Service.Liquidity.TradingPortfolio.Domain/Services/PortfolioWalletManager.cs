@@ -9,7 +9,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
     public class PortfolioWalletManager : IPortfolioWalletManager
     {
         private readonly IPortfolioWalletsStorage _portfolioWalletsStorage;
-        private Dictionary<string, PortfolioWallet> _wallets = new ();
+        private Dictionary<string, PortfolioWallet> _walletsByName = new ();
 
         public PortfolioWalletManager(
             IPortfolioWalletsStorage portfolioWalletsStorage
@@ -21,7 +21,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
         public void Load()
         {
             var data = _portfolioWalletsStorage.GetAsync().GetAwaiter().GetResult();
-            _wallets = data.Select(e => e).ToDictionary(e => e.Name);
+            _walletsByName = data.Select(e => e).ToDictionary(e => e.Name);
         }
 
         public async Task AddExternalAsync(string walletName, string brokerId, string sourceName)
@@ -33,7 +33,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 Name = walletName,
                 WalletId = walletName
             };
-            _wallets[portfolioWallet.Name] = portfolioWallet;
+            _walletsByName[portfolioWallet.Name] = portfolioWallet;
             await _portfolioWalletsStorage.AddOrUpdateAsync(portfolioWallet);
         }
 
@@ -47,13 +47,13 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 WalletId = walletId,
                 BrokerId = brokerId
             };
-            _wallets[portfolioWallet.Name] = portfolioWallet;
+            _walletsByName[portfolioWallet.Name] = portfolioWallet;
             await _portfolioWalletsStorage.AddOrUpdateAsync(portfolioWallet);
         }
 
         public PortfolioWallet GetExternalByName(string walletName)
         {
-            if (!_wallets.TryGetValue(walletName, out var wallet))
+            if (!_walletsByName.TryGetValue(walletName, out var wallet))
             {
                 return null;
             }
@@ -73,7 +73,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
 
         public PortfolioWallet GetInternalWalletByWalletName(string walletName)
         {
-            if (!_wallets.TryGetValue(walletName, out var wallet))
+            if (!_walletsByName.TryGetValue(walletName, out var wallet))
             {
                 return null;
             }
@@ -93,7 +93,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
 
         public PortfolioWallet GetById(string walletId)
         {
-            foreach (var wallet in _wallets.Values)
+            foreach (var wallet in _walletsByName.Values)
             {
                 if (wallet.WalletId == walletId)
                     return wallet;
@@ -103,7 +103,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
 
         public PortfolioWallet GetByName(string walletName)
         {
-            if (!_wallets.TryGetValue(walletName, out var wallet))
+            if (!_walletsByName.TryGetValue(walletName, out var wallet))
             {
                 return null;
             }
@@ -113,7 +113,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
 
         public async Task DeleteInternalByNameAsync(string walletName)
         {
-            if (!_wallets.TryGetValue(walletName, out var wallet))
+            if (!_walletsByName.TryGetValue(walletName, out var wallet))
             {
                 return;
             }
@@ -121,13 +121,13 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
             if (wallet.IsInternal)
             {
                 await _portfolioWalletsStorage.DeleteAsync(walletName);
-                _wallets.Remove(walletName);
+                _walletsByName.Remove(walletName);
             }
         }
 
         public async Task DeleteExternalByNameAsync(string walletName)
         {
-            if (!_wallets.TryGetValue(walletName, out var wallet))
+            if (!_walletsByName.TryGetValue(walletName, out var wallet))
             {
                 return;
             }
@@ -135,18 +135,18 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
             if (wallet.IsInternal == false)
             {
                 await _portfolioWalletsStorage.DeleteAsync(walletName);
-                _wallets.Remove(walletName);
+                _walletsByName.Remove(walletName);
             }
         }
 
         public List<PortfolioWallet> Get()
         {
-            return _wallets.Values.ToList();
+            return _walletsByName.Values.ToList();
         }
         
         public PortfolioWallet GetByExternalSource(string externalSource)
         {
-            return _wallets.Values.FirstOrDefault(w => w.ExternalSource == externalSource);
+            return _walletsByName.Values.FirstOrDefault(w => w.ExternalSource == externalSource);
         }
     }
 }
