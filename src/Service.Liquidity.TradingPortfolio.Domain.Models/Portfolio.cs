@@ -20,7 +20,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 8)] public decimal TotalLeverage { get; set; }
         [DataMember(Order = 9)] public decimal InternalBalanceInUsd { get; set; }
         [DataMember(Order = 10)] public decimal ExternalBalanceInUsd { get; set; }
-        [DataMember(Order = 11)] public long? HedgeOperationId { get; set; }
+        [DataMember(Order = 11)] public string HedgeOperationId { get; set; }
 
         public Asset GetOrCreateAssetBySymbol(string symbol)
         {
