@@ -577,7 +577,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 });
             }
 
-            _cachedPortfolio.HedgeOperationId = operation.Id.ToString();
+            _cachedPortfolio.HedgeOperationId = operation.Id;
 
             await _eventsPublisher.PublishAsync(portfolioTrades);
             await RecalculateAndSaveAndPublishPortfolioAsync();
