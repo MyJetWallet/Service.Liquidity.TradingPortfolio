@@ -35,7 +35,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
             try
             {
                 _portfolioWalletManager.AddExternalAsync(request.WalletName, request.BrokerId, request.Source);
-                return Task.FromResult(new WalletResponse()
+                
+                return Task.FromResult(new WalletResponse
                 {
                     ErrorMessage = string.Empty,
                     Success = true
@@ -68,7 +69,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     WalletFrom = request.WalletFrom,
 
                 });
-                return new SettlementResponse()
+                
+                return new SettlementResponse
                 {
                     Success = true,
                     ErrorMessage = string.Empty
@@ -77,7 +79,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
             catch (Exception e)
             {
-                return new SettlementResponse()
+                return new SettlementResponse
                 {
                     Success = false,
                     ErrorMessage = $"Can't set new settlement by user {request.User}"
@@ -89,7 +91,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
         {
             try
             {   await _portfolioWalletManager.AddInternalAsync(request.WalletId, request.BrokerId, request.WalletName);
-                return new WalletResponse()
+                
+                return new WalletResponse
                 {
                     ErrorMessage = string.Empty,
                     Success = true
@@ -97,7 +100,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
             catch (Exception e)
             {
-                return new WalletResponse()
+                return new WalletResponse
                 {
                     ErrorMessage = e.Message,
                     Success = false
@@ -149,7 +152,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
 
         public async Task<PortfolioResponse> GetPortfolioAsync()
         {
-            return new PortfolioResponse()
+            return new PortfolioResponse
             {
                 Portfolio = _portfolioManager.GetCurrentPortfolio()
             };
@@ -174,11 +177,11 @@ namespace Service.Liquidity.TradingPortfolio.Services
                   request.Comment,
                   request.User);
 
-                return new BalanceResponse() { ErrorMessage = string.Empty, Success = true };
+                return new BalanceResponse { ErrorMessage = string.Empty, Success = true };
             }
             catch (Exception e)
             {
-                return new BalanceResponse() { ErrorMessage = e.Message, Success = false };
+                return new BalanceResponse { ErrorMessage = e.Message, Success = false };
             }
         }
       
@@ -198,68 +201,69 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 return new SetVelocityResponse() { ErrorMessage = e.Message, Success = false };
             }
         }
-        
+
         public async Task<ManualTradeResponse> ReportManualTradeAsync(ReportManualTradeRequest request)
         {
-            using var activity = MyTelemetry.StartActivity("CreateManualTradeAsync");
-
-            request.AddToActivityAsJsonTag("CreateTradeManualRequest");
-            
-            _logger.LogInformation($"CreateManualTradeAsync receive request: {JsonConvert.SerializeObject(request)}");
-            
-            if (string.IsNullOrWhiteSpace(request.BrokerId) ||
-                string.IsNullOrWhiteSpace(request.WalletName) ||
-                string.IsNullOrWhiteSpace(request.AssociateSymbol) ||
-                string.IsNullOrWhiteSpace(request.BaseAsset) ||
-                string.IsNullOrWhiteSpace(request.QuoteAsset) ||
-                string.IsNullOrWhiteSpace(request.Comment) ||
-                string.IsNullOrWhiteSpace(request.User) ||
-                request.Price == 0 ||
-                request.BaseVolume == 0 ||
-                request.QuoteVolume == 0 ||
-                (request.BaseVolume > 0 && request.QuoteVolume > 0) ||
-                (request.BaseVolume < 0 && request.QuoteVolume < 0))
-            {
-                _logger.LogError($"Bad request entity: {JsonConvert.SerializeObject(request)}");
-                return new ManualTradeResponse() {Success = false, ErrorMessage = "Incorrect entity"};
-            }
-            
-            var trade = new TradeMessage()
-            {
-                Id = Guid.NewGuid().ToString("N"),
-                ReferenceId = string.Empty,
-                Market = request.AssociateSymbol,
-                Side = request.BaseVolume < 0 ? OrderSide.Sell : OrderSide.Buy,
-                Price = request.Price,
-                Volume = request.BaseVolume,
-                OppositeVolume = request.QuoteVolume,
-                Timestamp = DateTime.UtcNow,
-                AssociateWalletId = request.WalletName,
-                AssociateBrokerId = request.BrokerId,
-                AssociateClientId = string.Empty,
-                AssociateSymbol = request.AssociateSymbol,
-                Source = "manual",
-                BaseAsset = request.BaseAsset,
-                QuoteAsset = request.QuoteAsset,
-                Comment = request.Comment,
-                User = request.User,
-                FeeAsset = request.FeeAsset,
-                FeeVolume = request.FeeVolume
-            };     
             try
             {
+                using var activity = MyTelemetry.StartActivity("CreateManualTradeAsync");
+                request.AddToActivityAsJsonTag("CreateTradeManualRequest");
+
+                _logger.LogInformation(
+                    $"CreateManualTradeAsync receive request: {JsonConvert.SerializeObject(request)}");
+
+                if (string.IsNullOrWhiteSpace(request.BrokerId) ||
+                    string.IsNullOrWhiteSpace(request.WalletName) ||
+                    string.IsNullOrWhiteSpace(request.AssociateSymbol) ||
+                    string.IsNullOrWhiteSpace(request.BaseAsset) ||
+                    string.IsNullOrWhiteSpace(request.QuoteAsset) ||
+                    string.IsNullOrWhiteSpace(request.Comment) ||
+                    string.IsNullOrWhiteSpace(request.User) ||
+                    request.Price == 0 ||
+                    request.BaseVolume == 0 ||
+                    request.QuoteVolume == 0 ||
+                    (request.BaseVolume > 0 && request.QuoteVolume > 0) ||
+                    (request.BaseVolume < 0 && request.QuoteVolume < 0))
+                {
+                    _logger.LogError($"Bad request entity: {JsonConvert.SerializeObject(request)}");
+                    return new ManualTradeResponse() { Success = false, ErrorMessage = "Incorrect entity" };
+                }
+
+                var trade = new TradeMessage
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    ReferenceId = string.Empty,
+                    Market = request.AssociateSymbol,
+                    Side = request.BaseVolume < 0 ? OrderSide.Sell : OrderSide.Buy,
+                    Price = request.Price,
+                    Volume = request.BaseVolume,
+                    OppositeVolume = request.QuoteVolume,
+                    Timestamp = DateTime.UtcNow,
+                    AssociateWalletId = request.WalletName,
+                    AssociateBrokerId = request.BrokerId,
+                    AssociateClientId = string.Empty,
+                    AssociateSymbol = request.AssociateSymbol,
+                    Source = "manual",
+                    BaseAsset = request.BaseAsset,
+                    QuoteAsset = request.QuoteAsset,
+                    Comment = request.Comment,
+                    User = request.User,
+                    FeeAsset = request.FeeAsset,
+                    FeeVolume = request.FeeVolume
+                };
+
                 await _portfolioManager.ApplyTradeAsync(trade);
+                var response = new ManualTradeResponse { Success = true };
+
+                _logger.LogInformation("CreateManualTradeAsync return response: {@response}", response);
+
+                return response;
             }
             catch (Exception exception)
             {
                 _logger.LogError($"Creating failed: {JsonConvert.SerializeObject(exception)}");
-                return new ManualTradeResponse() {Success = false, ErrorMessage = exception.Message};
+                return new ManualTradeResponse { Success = false, ErrorMessage = exception.Message };
             }
-
-            var response = new ManualTradeResponse() {Success = true};
-            
-            _logger.LogInformation($"CreateManualTradeAsync return reponse: {JsonConvert.SerializeObject(response)}");
-            return response;
         }        
     }
 }
