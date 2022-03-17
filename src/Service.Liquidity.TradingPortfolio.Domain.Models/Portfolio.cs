@@ -117,6 +117,16 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
             [DataMember(Order = 1)] public PortfolioWallet Wallet { get; set; }
             [DataMember(Order = 2)] public decimal Balance { get; set; }
             [DataMember(Order = 3)] public decimal BalanceInUsd { get; set; }
+
+            public void Increase(decimal volume)
+            {
+                Balance += Math.Abs(volume);
+            }
+            
+            public void Decrease(decimal volume)
+            {
+                Balance -= Math.Abs(volume);
+            }
         }
     }
 }

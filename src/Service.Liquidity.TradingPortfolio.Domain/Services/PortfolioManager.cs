@@ -533,58 +533,35 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
         public async Task ApplyHedgeOperationAsync(HedgeOperation operation)
         {
             using var locker = await _myLocker.GetLocker();
-
             var portfolioTrades = new List<PortfolioTrade>();
 
-            foreach (var trade in operation.Trades ?? new List<HedgeTrade>())
+            foreach (var hedgeTrade in operation.Trades ?? new List<HedgeTrade>())
             {
-                var wallet = _portfolioWalletManager.GetByExternalSource(trade.ExchangeName);
+                var wallet = _portfolioWalletManager.GetByExternalSource(hedgeTrade.ExchangeName);
 
                 if (wallet == null)
                 {
-                    _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@trade}", trade);
+                    _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@trade}", hedgeTrade);
                     return;
                 }
 
-                var baseAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(trade.BaseAsset);
+                var baseAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(hedgeTrade.BaseAsset);
                 var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
-                baseWalletBalance.Balance += Convert.ToDecimal(trade.BaseVolume);
+                baseWalletBalance.Increase(hedgeTrade.BaseVolume);
 
-                var quoteAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(trade.QuoteAsset);
+                var quoteAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(hedgeTrade.QuoteAsset);
                 var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
-                quoteWalletBalance.Balance += Convert.ToDecimal(trade.QuoteVolume);
+                quoteWalletBalance.Decrease(hedgeTrade.QuoteVolume);
 
-                var (baseIndexPrice, baseVolumeInUsd) =
-                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(trade.BaseAsset,
-                        Convert.ToDecimal(trade.BaseVolume));
-                var (quoteIndexPrice, quoteVolumeInUsd) =
-                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(trade.QuoteAsset,
-                        Convert.ToDecimal(trade.QuoteVolume));
+                var (baseIndexPrice, baseVolumeInUsd) = _indexPricesClient
+                    .GetIndexPriceByAssetVolumeAsync(hedgeTrade.BaseAsset, hedgeTrade.BaseVolume);
+                var (quoteIndexPrice, quoteVolumeInUsd) = _indexPricesClient
+                    .GetIndexPriceByAssetVolumeAsync(hedgeTrade.QuoteAsset, hedgeTrade.QuoteVolume);
 
-                portfolioTrades.Add(new()
-                {
-                    TradeId = trade.Id,
-                    AssociateBrokerId = "jetwallet",
-                    BaseWalletName = wallet.Name,
-                    QuoteWalletName = wallet.Name,
-                    AssociateSymbol = trade.BaseAsset + "|" + trade.QuoteAsset,
-                    BaseAsset = trade.BaseAsset,
-                    QuoteAsset = trade.QuoteAsset,
-                    Side = OrderSide.Buy,
-                    Price = trade.Price,
-                    BaseVolume = Convert.ToDecimal(trade.BaseVolume),
-                    QuoteVolume = Convert.ToDecimal(trade.QuoteVolume),
-                    BaseVolumeInUsd = baseVolumeInUsd,
-                    QuoteVolumeInUsd = quoteVolumeInUsd,
-                    BaseAssetPriceInUsd = baseIndexPrice.UsdPrice,
-                    QuoteAssetPriceInUsd = quoteIndexPrice.UsdPrice,
-                    DateTime = DateTime.UtcNow,
-                    Source = "Hedger",
-                    Comment = "Hedge trade",
-                    FeeAsset = "",
-                    FeeVolume = 0,
-                    User = ""
-                });
+                var portfolioTrade = hedgeTrade.ToPortfolioTrade(wallet.Name,
+                    baseVolumeInUsd, baseIndexPrice.UsdPrice,
+                    quoteVolumeInUsd, quoteIndexPrice.UsdPrice);
+                portfolioTrades.Add(portfolioTrade);
             }
 
             _cachedPortfolio.HedgeOperationId = operation.Id;
