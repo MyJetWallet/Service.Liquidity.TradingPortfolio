@@ -208,25 +208,11 @@ namespace Service.Liquidity.TradingPortfolio.Services
             {
                 using var activity = MyTelemetry.StartActivity("CreateManualTradeAsync");
                 request.AddToActivityAsJsonTag("CreateTradeManualRequest");
+                _logger.LogInformation("CreateManualTradeAsync receive request: {@request}", request);
 
-                _logger.LogInformation(
-                    $"CreateManualTradeAsync receive request: {JsonConvert.SerializeObject(request)}");
-
-                if (string.IsNullOrWhiteSpace(request.BrokerId) ||
-                    string.IsNullOrWhiteSpace(request.WalletName) ||
-                    string.IsNullOrWhiteSpace(request.AssociateSymbol) ||
-                    string.IsNullOrWhiteSpace(request.BaseAsset) ||
-                    string.IsNullOrWhiteSpace(request.QuoteAsset) ||
-                    string.IsNullOrWhiteSpace(request.Comment) ||
-                    string.IsNullOrWhiteSpace(request.User) ||
-                    request.Price == 0 ||
-                    request.BaseVolume == 0 ||
-                    request.QuoteVolume == 0 ||
-                    (request.BaseVolume > 0 && request.QuoteVolume > 0) ||
-                    (request.BaseVolume < 0 && request.QuoteVolume < 0))
+                if (!request.IsValid(out var message))
                 {
-                    _logger.LogError($"Bad request entity: {JsonConvert.SerializeObject(request)}");
-                    return new ManualTradeResponse() { Success = false, ErrorMessage = "Incorrect entity" };
+                    return new ManualTradeResponse { Success = false, ErrorMessage = message };
                 }
 
                 var trade = new TradeMessage
