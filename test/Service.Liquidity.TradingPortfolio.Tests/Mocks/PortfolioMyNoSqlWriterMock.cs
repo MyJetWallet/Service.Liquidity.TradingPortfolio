@@ -5,7 +5,7 @@ using MyNoSqlServer.Abstractions;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 using Service.Liquidity.TradingPortfolio.Domain.Models.NoSql;
 
-namespace Service.Liquidity.TradingPortfolio.Tests;
+namespace Service.Liquidity.TradingPortfolio.Tests.Mocks;
 
 public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSql>
 {
@@ -14,14 +14,18 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         Assets = new Dictionary<string, Portfolio.Asset>()
     };
 
-    public async ValueTask InsertAsync(PortfolioNoSql entity)
+    public ValueTask InsertAsync(PortfolioNoSql entity)
     {
         _portfolio = entity.Portfolio;
+        
+        return ValueTask.CompletedTask;
     }
 
-    public async ValueTask InsertOrReplaceAsync(PortfolioNoSql entity)
+    public ValueTask InsertOrReplaceAsync(PortfolioNoSql entity)
     {
         _portfolio = entity.Portfolio;
+        
+        return ValueTask.CompletedTask;
     }
 
     public ValueTask CleanAndKeepLastRecordsAsync(string partitionKey, int amount)
@@ -57,14 +61,15 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public async ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
+    public ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
     {
         _portfolio = new()
         {
             Assets = new Dictionary<string, Portfolio.Asset>()
         };
 
-        return new List<PortfolioNoSql>() { PortfolioNoSql.Create(_portfolio) };
+        return ValueTask.FromResult<IEnumerable<PortfolioNoSql>>(new List<PortfolioNoSql>
+            { PortfolioNoSql.Create(_portfolio) });
     }
 
     public IAsyncEnumerable<PortfolioNoSql> GetAllAsync(int bulkRecordsCount)

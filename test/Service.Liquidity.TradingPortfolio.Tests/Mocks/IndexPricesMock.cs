@@ -4,7 +4,7 @@ using System.Linq;
 using Service.IndexPrices.Client;
 using Service.IndexPrices.Domain.Models;
 
-namespace Service.Liquidity.TradingPortfolio.Tests;
+namespace Service.Liquidity.TradingPortfolio.Tests.Mocks;
 
 public class IndexPricesMock : IIndexPricesClient
 {

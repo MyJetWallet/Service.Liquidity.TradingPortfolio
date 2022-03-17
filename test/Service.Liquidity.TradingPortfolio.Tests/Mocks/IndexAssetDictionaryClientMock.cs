@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Service.AssetsDictionary.Client;
 using Service.AssetsDictionary.Domain.Models;
 
-namespace Service.Liquidity.TradingPortfolio.Tests;
+namespace Service.Liquidity.TradingPortfolio.Tests.Mocks;
 
 public class IndexAssetDictionaryClientMock : IIndexAssetDictionaryClient
 {

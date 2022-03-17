@@ -82,7 +82,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 return new SettlementResponse
                 {
                     Success = false,
-                    ErrorMessage = $"Can't set new settlement by user {request.User}"
+                    ErrorMessage = $"Can't set new settlement by user {request.User}. {e.Message}"
                 };
             }
         }
@@ -150,12 +150,12 @@ namespace Service.Liquidity.TradingPortfolio.Services
             }
         }
 
-        public async Task<PortfolioResponse> GetPortfolioAsync()
+        public Task<PortfolioResponse> GetPortfolioAsync()
         {
-            return new PortfolioResponse
+            return Task.FromResult(new PortfolioResponse
             {
                 Portfolio = _portfolioManager.GetCurrentPortfolio()
-            };
+            });
         }
 
         public Task<GetWalletsResponse> GetWalletsAsync()
