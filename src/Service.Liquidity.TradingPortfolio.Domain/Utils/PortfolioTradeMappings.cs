@@ -31,8 +31,8 @@ public static class PortfolioTradeMappings
             DateTime = DateTime.UtcNow,
             Source = "Hedger",
             Comment = "Hedge trade",
-            FeeAsset = "",
-            FeeVolume = 0,
+            FeeAsset = trade.FeeAsset,
+            FeeVolume = trade.FeeVolume,
             User = ""
         };
     }
