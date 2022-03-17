@@ -535,7 +535,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
             using var locker = await _myLocker.GetLocker();
             var portfolioTrades = new List<PortfolioTrade>();
 
-            foreach (var hedgeTrade in operation.Trades ?? new List<HedgeTrade>())
+            foreach (var hedgeTrade in operation.HedgeTrades ?? new List<HedgeTrade>())
             {
                 var wallet = _portfolioWalletManager.GetByExternalSource(hedgeTrade.ExchangeName);
 
