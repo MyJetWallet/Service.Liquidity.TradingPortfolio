@@ -10,7 +10,7 @@
     <PackageReference Include="MyJetWallet.Service.FeeShareEngine.Client" Version="1.1.0" />
     <PackageReference Include="MyJetWallet.Service.IndexPrices.Client" Version="1.7.3" />
     <PackageReference Include="MyJetWallet.Service.Liquidity.Converter.Client" Version="1.5.0" />
-    <PackageReference Include="MyJetWallet.Service.Liquidity.Hedger.Client" Version="1.0.7" />
+    <PackageReference Include="MyJetWallet.Service.Liquidity.Hedger.Client" Version="1.0.8" />
   </ItemGroup>
 
   <ItemGroup>
