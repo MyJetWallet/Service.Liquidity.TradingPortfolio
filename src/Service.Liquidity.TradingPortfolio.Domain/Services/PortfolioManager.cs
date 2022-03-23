@@ -560,6 +560,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     baseWalletBalance.Decrease(hedgeTrade.BaseVolume);
                     quoteWalletBalance.Increase(hedgeTrade.QuoteVolume);
                 }
+                else
+                {
+                    throw new Exception($"Can't apply hedge trade. Not supported order side {hedgeTrade.Side.ToString()}");
+                }
 
                 if (hedgeTrade.FeeVolume > 0 && !string.IsNullOrEmpty(hedgeTrade.FeeAsset))
                 {
