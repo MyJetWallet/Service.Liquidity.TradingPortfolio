@@ -20,7 +20,7 @@ public static class PortfolioTradeMappings
             AssociateSymbol = trade.BaseAsset + "|" + trade.QuoteAsset,
             BaseAsset = trade.BaseAsset,
             QuoteAsset = trade.QuoteAsset,
-            Side = OrderSide.Buy,
+            Side = trade.Side,
             Price = trade.Price,
             BaseVolume = trade.BaseVolume,
             QuoteVolume = trade.QuoteVolume,

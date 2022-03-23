@@ -544,14 +544,29 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     _logger.LogWarning("HedgeTrade can't be applied. Wallet not found {@trade}", hedgeTrade);
                     return;
                 }
-
+                
                 var baseAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(hedgeTrade.BaseAsset);
                 var baseWalletBalance = baseAsset.GetOrCreateWalletBalance(wallet);
-                baseWalletBalance.Increase(hedgeTrade.BaseVolume);
-
                 var quoteAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(hedgeTrade.QuoteAsset);
                 var quoteWalletBalance = quoteAsset.GetOrCreateWalletBalance(wallet);
-                quoteWalletBalance.Decrease(hedgeTrade.QuoteVolume);
+                
+                if (hedgeTrade.Side == OrderSide.Buy)
+                {
+                    baseWalletBalance.Increase(hedgeTrade.BaseVolume);
+                    quoteWalletBalance.Decrease(hedgeTrade.QuoteVolume);
+                }
+                else if (hedgeTrade.Side == OrderSide.Sell)
+                {
+                    baseWalletBalance.Decrease(hedgeTrade.BaseVolume);
+                    quoteWalletBalance.Increase(hedgeTrade.QuoteVolume);
+                }
+
+                if (hedgeTrade.FeeVolume > 0 && !string.IsNullOrEmpty(hedgeTrade.FeeAsset))
+                {
+                    var feeAsset = _cachedPortfolio.GetOrCreateAssetBySymbol(hedgeTrade.FeeAsset);
+                    var feeWalletBalance = feeAsset.GetOrCreateWalletBalance(wallet);
+                    feeWalletBalance.Decrease(hedgeTrade.FeeVolume);
+                }
 
                 var (baseIndexPrice, baseVolumeInUsd) = _indexPricesClient
                     .GetIndexPriceByAssetVolumeAsync(hedgeTrade.BaseAsset, hedgeTrade.BaseVolume);
