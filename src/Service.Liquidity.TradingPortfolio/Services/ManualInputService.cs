@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
-using Service.IndexPrices.Client;
-using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Grpc;
 using Service.Liquidity.TradingPortfolio.Grpc.Models;
 using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using MyJetWallet.Domain.Orders;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
+using Service.Liquidity.TradingPortfolio.Cache;
 using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
 
@@ -18,16 +19,18 @@ namespace Service.Liquidity.TradingPortfolio.Services
         private readonly IPortfolioWalletManager _portfolioWalletManager;
         private readonly IPortfolioManager _portfolioManager;
         private readonly ILogger<ManualInputService> _logger;
+        private readonly IManualTradeCacheStorage _manualTradeCacheStorage;
 
         public ManualInputService(
             IPortfolioWalletManager portfolioWalletManager,
             ILogger<ManualInputService> logger, 
-            IPortfolioManager portfolioManager
-            )
+            IPortfolioManager portfolioManager,
+            IManualTradeCacheStorage manualTradeCacheStorage)
         {
             _portfolioWalletManager = portfolioWalletManager;
             _logger = logger;
             _portfolioManager = portfolioManager;
+            _manualTradeCacheStorage = manualTradeCacheStorage;
         }
 
         public Task<WalletResponse> AddExternalWalletAsync(WalletAddRequest request)
@@ -208,19 +211,38 @@ namespace Service.Liquidity.TradingPortfolio.Services
             {
                 using var activity = MyTelemetry.StartActivity("CreateManualTradeAsync");
                 request.AddToActivityAsJsonTag("CreateTradeManualRequest");
-                _logger.LogInformation("CreateManualTradeAsync receive request: {@request}", request);
+                var requestId = request.Id ?? Guid.NewGuid().ToString("N");
+                var orderSide = request.Id != null ? request.Side :
+                    (request.BaseVolume < 0 ? OrderSide.Sell : OrderSide.Buy);
 
-                if (!request.IsValid(out var message))
+                var lastResponse = _manualTradeCacheStorage.Get(requestId);
+                if (lastResponse?.Response != null)
                 {
-                    return new ManualTradeResponse { Success = false, ErrorMessage = message };
+                    _logger.LogWarning("CreateManualTradeAsync receive double request: {@request}", request);
+                    return lastResponse.Response;
                 }
 
+                _logger.LogInformation("CreateManualTradeAsync receive request: {@request}", request);
+                
+                
+                if (!request.IsValid(out var message))
+                {
+                    var responseInvalid = new ManualTradeResponse {Success = false, ErrorMessage = message};
+                    _manualTradeCacheStorage.Add(requestId, new ManualTradeCacheElement
+                    {
+                        Response = responseInvalid,
+                        Date = DateTime.UtcNow,
+
+                    });
+                    return responseInvalid;
+                }
+                
                 var trade = new TradeMessage
                 {
-                    Id = Guid.NewGuid().ToString("N"),
+                    Id = requestId,
                     ReferenceId = string.Empty,
                     Market = request.AssociateSymbol,
-                    Side = request.BaseVolume < 0 ? OrderSide.Sell : OrderSide.Buy,
+                    Side = orderSide,
                     Price = request.Price,
                     Volume = request.BaseVolume,
                     OppositeVolume = request.QuoteVolume,
@@ -242,7 +264,13 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 var response = new ManualTradeResponse { Success = true };
 
                 _logger.LogInformation("CreateManualTradeAsync return response: {@response}", response);
+                _manualTradeCacheStorage.Add(request.Id, new ManualTradeCacheElement
+                {
+                    Response = response,
+                    Date = DateTime.UtcNow,
 
+                });
+                _manualTradeCacheStorage.CleanUp();
                 return response;
             }
             catch (Exception exception)
@@ -250,6 +278,6 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 _logger.LogError($"Creating failed: {JsonConvert.SerializeObject(exception)}");
                 return new ManualTradeResponse { Success = false, ErrorMessage = exception.Message };
             }
-        }        
+        }
     }
 }

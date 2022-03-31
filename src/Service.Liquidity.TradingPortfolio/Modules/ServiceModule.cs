@@ -5,6 +5,7 @@ using MyServiceBus.Abstractions;
 using Service.FeeShareEngine.Domain.Models.Models;
 using Service.Liquidity.Converter.Domain.Models;
 using Service.Liquidity.Hedger.Domain.Models;
+using Service.Liquidity.TradingPortfolio.Cache;
 using Service.Liquidity.TradingPortfolio.Domain;
 using Service.Liquidity.TradingPortfolio.Domain.Interfaces;
 using Service.Liquidity.TradingPortfolio.Domain.Models;
@@ -38,6 +39,10 @@ namespace Service.Liquidity.TradingPortfolio.Modules
                 PortfolioWalletNoSql.TableName);
             builder.RegisterMyNoSqlWriter<PortfolioNoSql>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
                 PortfolioNoSql.TableName);
+
+            //Storage
+            builder.RegisterType<ManualTradeCacheStorage>().As<IManualTradeCacheStorage>()
+                .AutoActivate().SingleInstance();
         }
 
         private static void RegisterSubscribers(ContainerBuilder builder)
