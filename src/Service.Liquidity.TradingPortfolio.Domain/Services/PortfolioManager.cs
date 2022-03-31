@@ -387,31 +387,14 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
             using var locker = await _myLocker.GetLocker();
 
             var portfolioTrades = new List<PortfolioTrade>();
-            var applayTrade = false;
-            if (message.Side == OrderSide.Sell)
-            {
-                applayTrade = ApplyTrade(
+            if (!ApplyTrade(
                     message.AssociateWalletId,
                     message.BaseAsset,
-                    -Math.Abs(message.Volume),
+                    message.Volume,
                     message.QuoteAsset,
-                    Math.Abs(message.OppositeVolume),
+                    message.OppositeVolume,
                     message.FeeAsset,
-                    -Math.Abs(message.FeeVolume));
-            }
-            else
-            {
-                applayTrade = ApplyTrade(
-                    message.AssociateWalletId,
-                    message.BaseAsset,
-                    Math.Abs(message.Volume),
-                    message.QuoteAsset,
-                    -Math.Abs(message.OppositeVolume),
-                    message.FeeAsset,
-                    -Math.Abs(message.FeeVolume));
-            }
-
-            if (!applayTrade)
+                    message.FeeVolume))
             {
                 return;
             }

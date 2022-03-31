@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using MyJetWallet.Domain.Orders;
 
 namespace Service.Liquidity.TradingPortfolio.Grpc.Models
 {
@@ -20,8 +19,6 @@ namespace Service.Liquidity.TradingPortfolio.Grpc.Models
         [DataMember(Order = 10)] public decimal FeeVolume { get; set; }
         [DataMember(Order = 11)] public string BaseAsset { get; set; }
         [DataMember(Order = 12)] public string QuoteAsset { get; set; }
-        [DataMember(Order = 13)] public OrderSide Side { get; set; }
-        [DataMember(Order = 14)] public string Id { get; set; }
 
         public bool IsValid(out string message)
         {
@@ -75,6 +72,12 @@ namespace Service.Liquidity.TradingPortfolio.Grpc.Models
             if (QuoteVolume == 0)
             {
                 errors.Add($"{nameof(QuoteVolume)} can't be 0");
+            }
+
+            if (BaseVolume > 0 && QuoteVolume > 0 || BaseVolume < 0 && QuoteVolume < 0)
+            {
+                errors.Add($"{nameof(BaseVolume)} and {nameof(QuoteVolume)} can't be with same symbol");
+
             }
 
             message = string.Join("; ", errors);
