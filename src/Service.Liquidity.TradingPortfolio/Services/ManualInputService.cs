@@ -212,7 +212,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                 using var activity = MyTelemetry.StartActivity("CreateManualTradeAsync");
                 request.AddToActivityAsJsonTag("CreateTradeManualRequest");
                 var requestId = request.Id ?? Guid.NewGuid().ToString("N");
-                var orderSide = request.Id != null ? request.Side :
+                var orderSide = request.Side == OrderSide.UnknownOrderSide ? request.Side :
                     (request.BaseVolume < 0 ? OrderSide.Sell : OrderSide.Buy);
 
                 var lastResponse = _manualTradeCacheStorage.Get(requestId);
