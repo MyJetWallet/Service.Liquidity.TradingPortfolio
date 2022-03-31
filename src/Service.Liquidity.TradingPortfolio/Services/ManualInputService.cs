@@ -244,8 +244,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     Market = request.AssociateSymbol,
                     Side = orderSide,
                     Price = request.Price,
-                    Volume = request.BaseVolume,
-                    OppositeVolume = request.QuoteVolume,
+                    Volume = Math.Abs(request.BaseVolume),
+                    OppositeVolume = Math.Abs(request.QuoteVolume),
                     Timestamp = DateTime.UtcNow,
                     AssociateWalletId = request.WalletName,
                     AssociateBrokerId = request.BrokerId,
@@ -257,7 +257,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     Comment = request.Comment,
                     User = request.User,
                     FeeAsset = request.FeeAsset,
-                    FeeVolume = request.FeeVolume
+                    FeeVolume = Math.Abs(request.FeeVolume)
                 };
 
                 await _portfolioManager.ApplyTradeAsync(trade);
