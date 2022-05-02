@@ -71,6 +71,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 Timestamp = DateTime.Now,
                 DifferenceAsset = "USD",
                 DifferenceVolumeAbs = 50m,
+                FeeAsset = "BTC"
             };
 
             await service.ApplySwapsAsync(new[] { swaps });
@@ -100,6 +101,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 Timestamp = DateTime.Now,
                 DifferenceAsset = "USD",
                 DifferenceVolumeAbs = 50m,
+                FeeAsset = "BTC"
             };
 
             await _service.ApplySwapsAsync(new[] { swaps });
@@ -128,6 +130,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 Timestamp = DateTime.Now,
                 DifferenceAsset = "USD",
                 DifferenceVolumeAbs = 50m,
+                FeeAsset = "BTC"
             };
 
             await _service.ApplySwapsAsync(new[] { swaps });
@@ -189,6 +192,7 @@ namespace Service.Liquidity.TradingPortfolio.Tests
                 Timestamp = DateTime.Now,
                 DifferenceAsset = "USD",
                 DifferenceVolumeAbs = 50m,
+                FeeAsset = "BTC"
             };
         }
 
