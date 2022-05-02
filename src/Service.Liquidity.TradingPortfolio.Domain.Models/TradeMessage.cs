@@ -59,5 +59,7 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         
         [DataMember(Order = 19)] 
         public decimal FeeVolume { get; set; }
+        [DataMember(Order = 20)] 
+        public PortfolioTradeType Type { get; set; }
     }
 }

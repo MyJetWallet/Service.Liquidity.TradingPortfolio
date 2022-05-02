@@ -9,7 +9,8 @@ public static class PortfolioTradeMappings
 {
     public static PortfolioTrade ToPortfolioTrade(this HedgeTrade trade, string walletName, 
         decimal baseVolumeInUsd, decimal baseIndexPriceInUsd, 
-        decimal quoteVolumeInUsd, decimal quoteIndexPriceInUsd)
+        decimal quoteVolumeInUsd, decimal quoteIndexPriceInUsd,
+        decimal feeVolumeInUsd, decimal feeIndexPriceInUsd)
     {
         return new()
         {
@@ -33,6 +34,9 @@ public static class PortfolioTradeMappings
             Comment = "Hedge trade",
             FeeAsset = trade.FeeAsset,
             FeeVolume = trade.FeeVolume,
+            FeeVolumeInUsd = feeVolumeInUsd,
+            FeeAssetPriceInUsd = feeIndexPriceInUsd,
+            Type = PortfolioTradeType.Hedge,
             User = ""
         };
     }

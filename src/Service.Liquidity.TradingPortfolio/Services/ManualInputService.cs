@@ -257,7 +257,8 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     Comment = request.Comment,
                     User = request.User,
                     FeeAsset = request.FeeAsset,
-                    FeeVolume = Math.Abs(request.FeeVolume)
+                    FeeVolume = Math.Abs(request.FeeVolume),
+                    Type = PortfolioTradeType.Manual,
                 };
 
                 await _portfolioManager.ApplyTradeAsync(trade);

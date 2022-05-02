@@ -348,6 +348,10 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.AssetId2,
                         Convert.ToDecimal(message.Volume2));
 
+                var (feeAssetIndexPrice, feeVolumeInUsd) =
+                    _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.FeeAsset,
+                        Convert.ToDecimal(message.FeeAmount));
+                
                 var baseWallet = _portfolioWalletManager.GetInternalById(message.WalletId1);
                 var quoteWallet = _portfolioWalletManager.GetInternalById(message.WalletId2);
 
@@ -373,6 +377,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     Comment = "Swap", //TODO: ???
                     FeeAsset = message.AssetId1,
                     FeeVolume = Convert.ToDecimal(message.Volume1),
+                    FeeVolumeInUsd = feeVolumeInUsd,
+                    FeeAssetPriceInUsd = feeAssetIndexPrice.UsdPrice,
+                    Type = PortfolioTradeType.Swap,
                     //User = message //TODO: ???
                 };
                 portfolioTrades.Add(portfolioTrade);
@@ -416,13 +423,17 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 return;
             }
 
-            var (asset1IndexPrice, volume1InUsd) =
+            var (baseAssetIndexPrice, baseVolumeInUsd) =
                 _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.BaseAsset,
                     Convert.ToDecimal(message.Volume));
-            var (asset2IndexPrice, volume2InUsd) =
+            var (quoteAssetIndexPrice, quoteVolumeInUsd) =
                 _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.QuoteAsset,
                     Convert.ToDecimal(message.OppositeVolume));
 
+            var (feeAssetIndexPrice, feeVolumeInUsd) =
+                _indexPricesClient.GetIndexPriceByAssetVolumeAsync(message.FeeAsset,
+                    Convert.ToDecimal(message.FeeVolume));
+            
             var portfolioTrade = new PortfolioTrade
             {
                 TradeId = message.Id,
@@ -436,15 +447,18 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                 Price = message.Price,
                 BaseVolume = Convert.ToDecimal(message.Volume),
                 QuoteVolume = Convert.ToDecimal(message.OppositeVolume),
-                BaseVolumeInUsd = volume1InUsd,
-                QuoteVolumeInUsd = volume2InUsd,
-                BaseAssetPriceInUsd = asset1IndexPrice.UsdPrice,
-                QuoteAssetPriceInUsd = asset2IndexPrice.UsdPrice,
+                BaseVolumeInUsd = baseVolumeInUsd,
+                QuoteVolumeInUsd = quoteVolumeInUsd,
+                BaseAssetPriceInUsd = baseAssetIndexPrice.UsdPrice,
+                QuoteAssetPriceInUsd = quoteAssetIndexPrice.UsdPrice,
                 DateTime = DateTime.UtcNow,
                 Source = message.Source,
                 Comment = message.Comment,
                 FeeAsset = message.FeeAsset,
                 FeeVolume = Convert.ToDecimal(message.FeeVolume),
+                FeeVolumeInUsd = feeVolumeInUsd,
+                FeeAssetPriceInUsd = feeAssetIndexPrice.UsdPrice,
+                Type = message.Type,
                 User = message.User
             };
             portfolioTrades.Add(portfolioTrade);
@@ -593,10 +607,13 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     .GetIndexPriceByAssetVolumeAsync(hedgeTrade.BaseAsset, hedgeTrade.BaseVolume);
                 var (quoteIndexPrice, quoteVolumeInUsd) = _indexPricesClient
                     .GetIndexPriceByAssetVolumeAsync(hedgeTrade.QuoteAsset, hedgeTrade.QuoteVolume);
-
+                var (feeIndexPrice, feeVolumeInUsd) = _indexPricesClient
+                    .GetIndexPriceByAssetVolumeAsync(hedgeTrade.FeeAsset, hedgeTrade.FeeVolume);
+                
                 var portfolioTrade = hedgeTrade.ToPortfolioTrade(wallet.Name,
                     baseVolumeInUsd, baseIndexPrice.UsdPrice,
-                    quoteVolumeInUsd, quoteIndexPrice.UsdPrice);
+                    quoteVolumeInUsd, quoteIndexPrice.UsdPrice,
+                    feeVolumeInUsd, feeIndexPrice.UsdPrice);
                 portfolioTrades.Add(portfolioTrade);
             }
 

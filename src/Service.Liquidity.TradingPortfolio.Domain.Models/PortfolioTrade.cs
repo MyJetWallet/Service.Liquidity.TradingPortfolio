@@ -29,6 +29,9 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Models
         [DataMember(Order = 19)] public string User { get; set; } // User   SwapMessage."Converter"
         [DataMember(Order = 20)] public string FeeAsset { get; set; }  //TradeMessage.FeeAsset    SwapMessage.AssetId2
         [DataMember(Order = 21)] public decimal FeeVolume { get; set; }//TradeMessage.FeeVolume    SwapMessage.0
+        [DataMember(Order = 22)] public decimal FeeVolumeInUsd { get; set; }
+        [DataMember(Order = 23)] public decimal FeeAssetPriceInUsd { get; set; }
+        [DataMember(Order = 24)] public PortfolioTradeType Type { get; set; }
         [DataMember(Order = 100)] public long Id { get; set; }
     }
 }
