@@ -1,11 +1,12 @@
+using System;
 using System.Runtime.Serialization;
 
 namespace Service.Liquidity.TradingPortfolio.Domain.Models;
 
-public enum PortfolioTradeType
+[Flags] public enum PortfolioTradeType
 {
-    Unknown = 0,
-    Swap,
-    Manual,
-    Hedge
+    None = 0,
+    Swap = 1,
+    Manual = 2,
+    AutoHedge = 4
 }

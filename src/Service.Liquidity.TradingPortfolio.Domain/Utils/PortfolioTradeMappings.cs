@@ -36,7 +36,7 @@ public static class PortfolioTradeMappings
             FeeVolume = trade.FeeVolume,
             FeeVolumeInUsd = feeVolumeInUsd,
             FeeAssetPriceInUsd = feeIndexPriceInUsd,
-            Type = PortfolioTradeType.Hedge,
+            Type = PortfolioTradeType.AutoHedge,
             User = ""
         };
     }
