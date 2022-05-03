@@ -31,7 +31,7 @@ public static class PortfolioTradeMappings
             QuoteAssetPriceInUsd = quoteIndexPriceInUsd,
             DateTime = DateTime.UtcNow,
             Source = "Hedger",
-            Comment = "Hedge trade",
+            Comment = $"Hedge {trade.ExchangeName} trade Id:{trade.ExternalId}",
             FeeAsset = trade.FeeAsset,
             FeeVolume = trade.FeeVolume,
             FeeVolumeInUsd = feeVolumeInUsd,

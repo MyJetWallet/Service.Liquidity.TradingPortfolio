@@ -251,7 +251,7 @@ namespace Service.Liquidity.TradingPortfolio.Services
                     AssociateBrokerId = request.BrokerId,
                     AssociateClientId = string.Empty,
                     AssociateSymbol = request.AssociateSymbol,
-                    Source = "manual",
+                    Source = "Manual",
                     BaseAsset = request.BaseAsset,
                     QuoteAsset = request.QuoteAsset,
                     Comment = request.Comment,
