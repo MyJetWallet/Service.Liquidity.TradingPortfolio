@@ -375,8 +375,8 @@ namespace Service.Liquidity.TradingPortfolio.Domain.Services
                     DateTime = DateTime.UtcNow,
                     Source = baseWallet?.Name ?? quoteWallet?.Name ?? string.Empty, //TODO: ???
                     Comment = "Swap", //TODO: ???
-                    FeeAsset = message.AssetId1,
-                    FeeVolume = Convert.ToDecimal(message.Volume1),
+                    FeeAsset = message.FeeAsset,
+                    FeeVolume = Convert.ToDecimal(message.FeeAmount),
                     FeeVolumeInUsd = feeVolumeInUsd,
                     FeeAssetPriceInUsd = feeAssetIndexPrice.UsdPrice,
                     Type = PortfolioTradeType.Swap,
