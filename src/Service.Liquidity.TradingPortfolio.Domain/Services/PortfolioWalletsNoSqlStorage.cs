@@ -48,7 +48,7 @@ public class PortfolioWalletsNoSqlStorage : IPortfolioWalletsStorage
 
     public async Task BulkInsetOrUpdateAsync(IEnumerable<PortfolioWallet> models)
     {
-        var nosqlModels = models.Select(PortfolioWalletNoSql.Create);
+        var nosqlModels = models.Select(PortfolioWalletNoSql.Create).ToList();
         await _myNoSqlServerDataWriter.BulkInsertOrReplaceAsync(nosqlModels);
     }
 }

@@ -33,17 +33,17 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public ValueTask BulkInsertOrReplaceAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
+    public ValueTask BulkInsertOrReplaceAsync(IReadOnlyList<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask CleanAndBulkInsertAsync(IEnumerable<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
+    public ValueTask CleanAndBulkInsertAsync(IReadOnlyList<PortfolioNoSql> entity, DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask CleanAndBulkInsertAsync(string partitionKey, IEnumerable<PortfolioNoSql> entity,
+    public ValueTask CleanAndBulkInsertAsync(string partitionKey, IReadOnlyList<PortfolioNoSql> entity,
         DataSynchronizationPeriod dataSynchronizationPeriod = DataSynchronizationPeriod.Sec5)
     {
         throw new NotImplementedException();
@@ -61,14 +61,14 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public ValueTask<IEnumerable<PortfolioNoSql>> GetAsync()
+    public ValueTask<List<PortfolioNoSql>> GetAsync()
     {
         _portfolio = new()
         {
             Assets = new Dictionary<string, Portfolio.Asset>()
         };
 
-        return ValueTask.FromResult<IEnumerable<PortfolioNoSql>>(new List<PortfolioNoSql>
+        return ValueTask.FromResult<List<PortfolioNoSql>>(new List<PortfolioNoSql>
             { PortfolioNoSql.Create(_portfolio) });
     }
 
@@ -77,7 +77,7 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public ValueTask<IEnumerable<PortfolioNoSql>> GetAsync(string partitionKey)
+    public ValueTask<List<PortfolioNoSql>> GetAsync(string partitionKey)
     {
         throw new NotImplementedException();
     }
@@ -87,7 +87,7 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public ValueTask<IReadOnlyList<PortfolioNoSql>> GetMultipleRowKeysAsync(string partitionKey, IEnumerable<string> rowKeys)
+    public ValueTask<List<PortfolioNoSql>> GetMultipleRowKeysAsync(string partitionKey, IReadOnlyList<string> rowKeys)
     {
         throw new NotImplementedException();
     }
@@ -97,12 +97,12 @@ public class PortfolioMyNoSqlWriterMock : IMyNoSqlServerDataWriter<PortfolioNoSq
         throw new NotImplementedException();
     }
 
-    public ValueTask<IEnumerable<PortfolioNoSql>> QueryAsync(string query)
+    public ValueTask<List<PortfolioNoSql>> QueryAsync(string query)
     {
         throw new NotImplementedException();
     }
 
-    public ValueTask<IEnumerable<PortfolioNoSql>> GetHighestRowAndBelow(string partitionKey, string rowKeyFrom, int amount)
+    public ValueTask<List<PortfolioNoSql>> GetHighestRowAndBelow(string partitionKey, string rowKeyFrom, int amount)
     {
         throw new NotImplementedException();
     }
